@@ -193,9 +193,9 @@ function makePayments(rand: () => number, installment: number, count: number, sc
   const out: PaymentRecord[] = [];
   const today = new Date(2026, 5, 1);
   const lateProb =
-    scoreBand === "loyal" ? 0.02 : scoreBand === "stable" ? 0.08 : scoreBand === "watch" ? 0.25 : 0.5;
+    scoreBand === "loyal" ? 0.04 : scoreBand === "stable" ? 0.14 : scoreBand === "watch" ? 0.32 : 0.55;
   const missProb =
-    scoreBand === "loyal" ? 0 : scoreBand === "stable" ? 0.01 : scoreBand === "watch" ? 0.08 : 0.25;
+    scoreBand === "loyal" ? 0.01 : scoreBand === "stable" ? 0.04 : scoreBand === "watch" ? 0.15 : 0.35;
   for (let i = count - 1; i >= 0; i--) {
     const d = new Date(today);
     d.setMonth(d.getMonth() - i);
