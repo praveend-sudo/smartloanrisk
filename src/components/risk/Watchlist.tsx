@@ -64,7 +64,6 @@ export function Watchlist({
           <FilterBtn id="all" label="All" />
           <FilterBtn id="watch" label="Early-Warning" />
           <FilterBtn id="risk" label="High-Risk" />
-          <FilterBtn id="drop" label="Predicted Drop" />
         </div>
       </div>
 
