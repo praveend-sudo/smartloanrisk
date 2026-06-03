@@ -1,10 +1,21 @@
 import { useMemo, useState } from "react";
-import { CUSTOMERS, fmtUSDFull, getBand, type Customer } from "@/lib/credit-data";
+import { CUSTOMERS, fmtUSDFull, getBand, type Customer, type LoanProduct } from "@/lib/credit-data";
 import { ScoreBadge } from "./ScoreBadge";
 import { cn } from "@/lib/utils";
 import { AIExplainCell } from "./AIExplainCell";
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
+const PRODUCT_OPTIONS: Array<LoanProduct | "All"> = [
+  "All",
+  "Mortgage",
+  "Auto Loan",
+  "Personal Loan",
+  "Home Equity LOC",
+  "Student Loan",
+  "SBA Business Loan",
+  "Agricultural Loan",
+  "Trade Finance",
+];
 
 export function Watchlist({
   onSelect,
@@ -14,6 +25,7 @@ export function Watchlist({
   selectedId?: string;
 }) {
   const [filter, setFilter] = useState<"all" | "watch" | "risk">("all");
+  const [product, setProduct] = useState<LoanProduct | "All">("All");
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<{ col: string; dir: "asc" | "desc" }>({
     col: "score12m",
@@ -25,12 +37,14 @@ export function Watchlist({
       const b = getBand(c.scoreCurrent).id;
       if (filter === "watch" && b !== "watch") return false;
       if (filter === "risk" && b !== "risk") return false;
+      if (product !== "All" && !c.loans.some((l) => l.product === product)) return false;
       if (q && !c.name.toLowerCase().includes(q.toLowerCase()) && !c.id.toLowerCase().includes(q.toLowerCase()))
         return false;
       return true;
     }).map((c) => {
-      const principal = c.loans.reduce((s, l) => s + l.principal, 0);
-      const installment = c.loans.reduce((s, l) => s + l.installment, 0);
+      const matchingLoans = product === "All" ? c.loans : c.loans.filter((l) => l.product === product);
+      const principal = matchingLoans.reduce((s, l) => s + l.principal, 0);
+      const installment = matchingLoans.reduce((s, l) => s + l.installment, 0);
       return { c, principal, installment };
     });
 
@@ -48,7 +62,7 @@ export function Watchlist({
       }
     });
     return filtered;
-  }, [filter, q, sort]);
+  }, [filter, product, q, sort]);
 
   const SortHeader = ({
     col,
@@ -106,13 +120,25 @@ export function Watchlist({
             Probabilistic 6 & 12-month risk forecast · click a row for full customer file
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search name or ID…"
             className="h-8 rounded-md border bg-background px-3 text-xs outline-none focus:ring-2 focus:ring-ring"
           />
+          <select
+            value={product}
+            onChange={(e) => setProduct(e.target.value as LoanProduct | "All")}
+            className="h-8 rounded-md border bg-background px-2 text-xs outline-none focus:ring-2 focus:ring-ring"
+            title="Filter by loan product"
+          >
+            {PRODUCT_OPTIONS.map((p) => (
+              <option key={p} value={p}>
+                {p === "All" ? "All products" : p}
+              </option>
+            ))}
+          </select>
           <FilterBtn id="all" label="All" />
           <FilterBtn id="watch" label="Early-Warning" />
           <FilterBtn id="risk" label="High-Risk" />
