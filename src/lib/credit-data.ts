@@ -348,6 +348,47 @@ export function portfolioStats(customers: Customer[], scoreField: "scoreCurrent"
   };
 }
 
+export interface ProductStat {
+  product: LoanProduct;
+  loanBook: number;
+  outstanding: number;
+  atRiskExposure: number;
+  duePayments: number;
+  loanCount: number;
+}
+
+export function productStats(customers: Customer[]): ProductStat[] {
+  const map = new Map<LoanProduct, ProductStat>();
+  for (const c of customers) {
+    const band = getBand(c.scoreCurrent).id;
+    const atRisk = band === "watch" || band === "risk";
+    for (const l of c.loans) {
+      let s = map.get(l.product);
+      if (!s) {
+        s = {
+          product: l.product,
+          loanBook: 0,
+          outstanding: 0,
+          atRiskExposure: 0,
+          duePayments: 0,
+          loanCount: 0,
+        };
+        map.set(l.product, s);
+      }
+      s.loanBook += l.principal;
+      s.outstanding += l.outstanding;
+      s.loanCount += 1;
+      if (atRisk) s.atRiskExposure += l.outstanding;
+      // Due payments = sum of late/missed installment amounts in last 12 months
+      for (const p of l.payments) {
+        if (p.status !== "Paid") s.duePayments += l.installment;
+      }
+    }
+  }
+  return Array.from(map.values()).sort((a, b) => b.outstanding - a.outstanding);
+}
+
+
 export const fmtUSD = (n: number) =>
   n >= 1_000_000
     ? `$${(n / 1_000_000).toFixed(2)}M`
