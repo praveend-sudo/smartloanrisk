@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import logosAsset from "@/assets/logos.png.asset.json";
 import { CUSTOMERS, portfolioStats, type Customer } from "@/lib/credit-data";
-import { PortfolioKPIs } from "@/components/risk/PortfolioKPIs";
+import { PortfolioKPIs, type Period } from "@/components/risk/PortfolioKPIs";
 import { Watchlist } from "@/components/risk/Watchlist";
 import { CustomerDetail } from "@/components/risk/CustomerDetail";
 
