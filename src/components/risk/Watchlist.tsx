@@ -3,6 +3,8 @@ import { CUSTOMERS, fmtUSDFull, getBand, type Customer } from "@/lib/credit-data
 import { ScoreBadge } from "./ScoreBadge";
 import { cn } from "@/lib/utils";
 import { AIExplainCell } from "./AIExplainCell";
+import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+
 
 export function Watchlist({
   onSelect,
