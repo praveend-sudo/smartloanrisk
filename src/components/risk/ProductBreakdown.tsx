@@ -1,8 +1,11 @@
-import { useMemo } from "react";
-import { CUSTOMERS, fmtUSD, productStats } from "@/lib/credit-data";
+import { useMemo, useState } from "react";
+import { CUSTOMERS, fmtUSD, productStats, type Customer, type LoanProduct } from "@/lib/credit-data";
 import type { Period } from "./PortfolioKPIs";
+import { ScoreBadge } from "./ScoreBadge";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+
 import {
   Building2,
   Car,
