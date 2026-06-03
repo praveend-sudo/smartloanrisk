@@ -1,5 +1,7 @@
 import { useMemo } from "react";
 import { CUSTOMERS, fmtUSD, productStats } from "@/lib/credit-data";
+import type { Period } from "./PortfolioKPIs";
+import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Building2,
@@ -10,6 +12,7 @@ import {
   Briefcase,
   Sprout,
   Ship,
+  CreditCard,
   type LucideIcon,
 } from "lucide-react";
 
@@ -22,10 +25,24 @@ const ICONS: Record<string, LucideIcon> = {
   "SBA Business Loan": Briefcase,
   "Agricultural Loan": Sprout,
   "Trade Finance": Ship,
+  "Credit Cards": CreditCard,
 };
 
-export function ProductBreakdown() {
-  const stats = useMemo(() => productStats(CUSTOMERS), []);
+const PERIOD_FIELD = {
+  current: "scoreCurrent",
+  "6m": "score6m",
+  "12m": "score12m",
+} as const;
+
+export function ProductBreakdown({
+  period,
+  onPeriodChange,
+}: {
+  period: Period;
+  onPeriodChange: (p: Period) => void;
+}) {
+  const stats = useMemo(() => productStats(CUSTOMERS, PERIOD_FIELD[period]), [period]);
+
   const totals = useMemo(
     () =>
       stats.reduce(
