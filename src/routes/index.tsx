@@ -6,6 +6,7 @@ import { PortfolioKPIs, type Period } from "@/components/risk/PortfolioKPIs";
 import { Watchlist } from "@/components/risk/Watchlist";
 import { CustomerDetail } from "@/components/risk/CustomerDetail";
 import { ProductRiskChart } from "@/components/risk/ProductRiskChart";
+import { ProductBreakdown } from "@/components/risk/ProductBreakdown";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -65,7 +66,11 @@ function Dashboard() {
           </p>
         </div>
 
+        <ProductBreakdown />
+
         <PortfolioKPIs {...stats} customerCount={CUSTOMERS.length} period={period} onPeriodChange={setPeriod} />
+
+
 
         <ProductRiskChart />
 
