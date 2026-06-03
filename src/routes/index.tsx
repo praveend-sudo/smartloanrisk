@@ -7,6 +7,7 @@ import { Watchlist } from "@/components/risk/Watchlist";
 import { CustomerDetail } from "@/components/risk/CustomerDetail";
 import { ProductRiskChart } from "@/components/risk/ProductRiskChart";
 import { ProductBreakdown } from "@/components/risk/ProductBreakdown";
+import { ActionPlanner } from "@/components/risk/ActionPlanner";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -74,8 +75,11 @@ function Dashboard() {
 
         <ProductRiskChart />
 
+        <ActionPlanner onSelectCustomer={setSelected} />
+
         <Watchlist onSelect={setSelected} selectedId={selected?.id} />
       </main>
+
 
       {selected && <CustomerDetail customer={selected} onClose={() => setSelected(null)} />}
     </div>
