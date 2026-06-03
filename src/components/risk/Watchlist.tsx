@@ -122,15 +122,15 @@ export function Watchlist({
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
-              <th className="px-5 py-3 text-left font-medium">Customer</th>
-              <th className="px-3 py-3 text-left font-medium">Current</th>
-              <th className="px-3 py-3 text-left font-medium">6-Month Forecast</th>
-              <th className="px-3 py-3 text-left font-medium">12-Month Forecast</th>
-              <th className="px-3 py-3 text-right font-medium">Loan Amount</th>
-              <th className="px-3 py-3 text-right font-medium">Installment</th>
-              <th className="px-3 py-3 text-center font-medium">AI Explain</th>
-              <th className="px-5 py-3 text-right font-medium" />
+            <tr className="border-b bg-muted/40">
+              <SortHeader col="name" className="px-5">Customer</SortHeader>
+              <SortHeader col="scoreCurrent">Current</SortHeader>
+              <SortHeader col="score6m">6-Month Forecast</SortHeader>
+              <SortHeader col="score12m">12-Month Forecast</SortHeader>
+              <SortHeader col="principal" align="right">Loan Amount</SortHeader>
+              <SortHeader col="installment" align="right">Installment</SortHeader>
+              <th className="px-3 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">AI Explain</th>
+              <th className="px-5 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground" />
             </tr>
           </thead>
           <tbody>
