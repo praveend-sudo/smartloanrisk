@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { BANDS, CUSTOMERS, fmtUSDFull, getBand, type Customer, type ScoreBand } from "@/lib/credit-data";
 import { ScoreBadge } from "./ScoreBadge";
-import { Download } from "lucide-react";
+import { Download, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ActionOption {
