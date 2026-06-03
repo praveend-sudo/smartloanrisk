@@ -75,8 +75,11 @@ function Dashboard() {
 
         <ProductRiskChart />
 
+        <ActionPlanner onSelectCustomer={setSelected} />
+
         <Watchlist onSelect={setSelected} selectedId={selected?.id} />
       </main>
+
 
       {selected && <CustomerDetail customer={selected} onClose={() => setSelected(null)} />}
     </div>
