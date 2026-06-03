@@ -66,7 +66,11 @@ function Dashboard() {
           </p>
         </div>
 
+        <ProductBreakdown />
+
         <PortfolioKPIs {...stats} customerCount={CUSTOMERS.length} period={period} onPeriodChange={setPeriod} />
+
+
 
         <ProductRiskChart />
 
