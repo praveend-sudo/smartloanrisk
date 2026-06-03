@@ -74,7 +74,24 @@ export function ProductBreakdown({
             <Legend label="Outstanding" tone="primary" />
             <Legend label="At-Risk" tone="risk" />
             <Legend label="Due Payments" tone="watch" />
+            <div className="ml-2 flex items-center gap-1.5">
+              {(["current", "6m", "12m"] as const).map((id) => (
+                <button
+                  key={id}
+                  onClick={() => onPeriodChange(id)}
+                  className={cn(
+                    "rounded-md px-2.5 py-1 text-xs font-medium transition",
+                    period === id
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary text-secondary-foreground hover:bg-secondary/70",
+                  )}
+                >
+                  {id === "current" ? "Now" : id === "6m" ? "6M" : "12M"}
+                </button>
+              ))}
+            </div>
           </div>
+
         </div>
 
         <div className="overflow-x-auto">
