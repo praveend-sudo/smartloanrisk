@@ -80,6 +80,7 @@ function Dashboard() {
         <CollapsibleSection
           title="Product-Wise Portfolio Snapshot"
           description="Loan book, outstanding, at-risk exposure & due payments by product"
+          icon={Layers}
         >
           <ProductBreakdown period={period} onPeriodChange={setPeriod} onSelectCustomer={setSelected} />
         </CollapsibleSection>
@@ -87,6 +88,7 @@ function Dashboard() {
         <CollapsibleSection
           title="Loan Product Risk Movement"
           description="Predicted score trajectory by product"
+          icon={TrendingUp}
         >
           <ProductRiskChart />
         </CollapsibleSection>
@@ -94,6 +96,7 @@ function Dashboard() {
         <CollapsibleSection
           title="Action Planner"
           description="Filter customers by recommended action and export KYC list"
+          icon={ClipboardCheck}
         >
           <ActionPlanner onSelectCustomer={setSelected} />
         </CollapsibleSection>
@@ -101,6 +104,7 @@ function Dashboard() {
         <CollapsibleSection
           title="Customer Watchlist"
           description="Sortable, filterable list of customers with AI explanations"
+          icon={ShieldAlert}
         >
           <Watchlist onSelect={setSelected} selectedId={selected?.id} />
         </CollapsibleSection>
