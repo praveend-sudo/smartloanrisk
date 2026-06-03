@@ -66,6 +66,11 @@ export function Watchlist({
     return filtered;
   }, [filter, product, q, sort]);
 
+  useEffect(() => { setPage(1); }, [filter, product, q, sort]);
+
+  const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const pagedRows = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   const SortHeader = ({
     col,
     children,
