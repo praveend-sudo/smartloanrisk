@@ -16,6 +16,8 @@ import {
   Sprout,
   Ship,
   CreditCard,
+  ChevronLeft,
+  ChevronRight,
   type LucideIcon,
 } from "lucide-react";
 
