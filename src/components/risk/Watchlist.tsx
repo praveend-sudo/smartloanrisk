@@ -167,7 +167,7 @@ export function Watchlist({
             </tr>
           </thead>
           <tbody>
-            {rows.map(({ c, principal, installment }) => {
+            {pagedRows.map(({ c, principal, installment }) => {
               const selected = c.id === selectedId;
               return (
                 <tr
@@ -202,7 +202,7 @@ export function Watchlist({
                 </tr>
               );
             })}
-            {rows.length === 0 && (
+            {pagedRows.length === 0 && (
               <tr>
                 <td colSpan={8} className="px-5 py-10 text-center text-sm text-muted-foreground">
                   No customers match the current filter.
@@ -212,6 +212,34 @@ export function Watchlist({
           </tbody>
         </table>
       </div>
+      {rows.length > PAGE_SIZE && (
+        <div className="flex items-center justify-between border-t px-5 py-3">
+          <span className="text-xs text-muted-foreground">
+            Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, rows.length)} of {rows.length}
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="inline-flex h-7 items-center gap-1 rounded-md border bg-background px-2.5 text-xs font-medium transition hover:bg-muted disabled:opacity-40"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+              Prev
+            </button>
+            <span className="text-xs tabular-nums text-muted-foreground">
+              Page {page} / {totalPages}
+            </span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="inline-flex h-7 items-center gap-1 rounded-md border bg-background px-2.5 text-xs font-medium transition hover:bg-muted disabled:opacity-40"
+            >
+              Next
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
