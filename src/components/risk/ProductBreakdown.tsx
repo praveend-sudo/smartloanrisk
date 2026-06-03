@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { CUSTOMERS, fmtUSD, productStats, type Customer, type LoanProduct } from "@/lib/credit-data";
 import type { Period } from "./PortfolioKPIs";
 import { ScoreBadge } from "./ScoreBadge";
@@ -16,6 +16,8 @@ import {
   Sprout,
   Ship,
   CreditCard,
+  ChevronLeft,
+  ChevronRight,
   type LucideIcon,
 } from "lucide-react";
 
@@ -205,6 +207,9 @@ function ProductCustomersDialog({
   onClose: () => void;
   onSelectCustomer: (c: Customer) => void;
 }) {
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 20;
+
   const rows = useMemo(() => {
     if (!product) return [];
     return CUSTOMERS.filter((c) =>
@@ -220,6 +225,11 @@ function ProductCustomersDialog({
       .sort((a, b) => a.c.scoreCurrent - b.c.scoreCurrent);
   }, [product]);
 
+  useEffect(() => { setPage(1); }, [product]);
+
+  const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const pagedRows = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   return (
     <Dialog open={!!product} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-3xl">
@@ -229,7 +239,7 @@ function ProductCustomersDialog({
             {rows.length} customers · sorted by current risk score (lowest first)
           </DialogDescription>
         </DialogHeader>
-        <div className="max-h-[60vh] overflow-y-auto">
+        <div className="max-h-[50vh] overflow-y-auto">
           <table className="w-full text-sm">
             <thead className="sticky top-0 bg-card">
               <tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -241,7 +251,7 @@ function ProductCustomersDialog({
               </tr>
             </thead>
             <tbody>
-              {rows.map(({ c, exposure }) => {
+              {pagedRows.map(({ c, exposure }) => {
                 const d6 = c.score6m - c.scoreCurrent;
                 const d12 = c.score12m - c.scoreCurrent;
                 return (
@@ -264,6 +274,34 @@ function ProductCustomersDialog({
             </tbody>
           </table>
         </div>
+        {rows.length > PAGE_SIZE && (
+          <div className="flex items-center justify-between border-t pt-3 mt-1">
+            <span className="text-xs text-muted-foreground">
+              Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, rows.length)} of {rows.length}
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="inline-flex h-7 items-center gap-1 rounded-md border bg-background px-2.5 text-xs font-medium transition hover:bg-muted disabled:opacity-40"
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+                Prev
+              </button>
+              <span className="text-xs tabular-nums text-muted-foreground">
+                Page {page} / {totalPages}
+              </span>
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="inline-flex h-7 items-center gap-1 rounded-md border bg-background px-2.5 text-xs font-medium transition hover:bg-muted disabled:opacity-40"
+              >
+                Next
+                <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

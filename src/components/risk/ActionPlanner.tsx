@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { BANDS, CUSTOMERS, fmtUSDFull, getBand, type Customer, type ScoreBand } from "@/lib/credit-data";
 import { ScoreBadge } from "./ScoreBadge";
-import { Download } from "lucide-react";
+import { Download, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ActionOption {
@@ -89,6 +89,8 @@ function downloadCSV(filename: string, rows: Customer[], action: ActionOption) {
 export function ActionPlanner({ onSelectCustomer }: { onSelectCustomer?: (c: Customer) => void }) {
   const [actionKey, setActionKey] = useState<string>(ACTIONS[0].key);
   const action = useMemo(() => ACTIONS.find((a) => a.key === actionKey)!, [actionKey]);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 20;
 
   const rows = useMemo(
     () =>
@@ -97,6 +99,11 @@ export function ActionPlanner({ onSelectCustomer }: { onSelectCustomer?: (c: Cus
       ),
     [action],
   );
+
+  useEffect(() => { setPage(1); }, [actionKey]);
+
+  const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const pagedRows = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const totalExposure = useMemo(() => rows.reduce((s, c) => s + exposureOf(c), 0), [rows]);
 
@@ -168,7 +175,7 @@ export function ActionPlanner({ onSelectCustomer }: { onSelectCustomer?: (c: Cus
             </tr>
           </thead>
           <tbody>
-            {rows.map((c) => (
+            {pagedRows.map((c) => (
               <tr
                 key={c.id}
                 onClick={() => onSelectCustomer?.(c)}
@@ -193,7 +200,7 @@ export function ActionPlanner({ onSelectCustomer }: { onSelectCustomer?: (c: Cus
                 <td className="px-3 py-2.5 text-right tabular-nums">{fmtUSDFull(exposureOf(c))}</td>
               </tr>
             ))}
-            {rows.length === 0 && (
+            {pagedRows.length === 0 && (
               <tr>
                 <td colSpan={8} className="px-3 py-6 text-center text-sm text-muted-foreground">
                   No customers match this action.
@@ -203,6 +210,34 @@ export function ActionPlanner({ onSelectCustomer }: { onSelectCustomer?: (c: Cus
           </tbody>
         </table>
       </div>
+      {rows.length > PAGE_SIZE && (
+        <div className="flex items-center justify-between border-t pt-3 mt-3">
+          <span className="text-xs text-muted-foreground">
+            Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, rows.length)} of {rows.length}
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="inline-flex h-7 items-center gap-1 rounded-md border bg-background px-2.5 text-xs font-medium transition hover:bg-muted disabled:opacity-40"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+              Prev
+            </button>
+            <span className="text-xs tabular-nums text-muted-foreground">
+              Page {page} / {totalPages}
+            </span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="inline-flex h-7 items-center gap-1 rounded-md border bg-background px-2.5 text-xs font-medium transition hover:bg-muted disabled:opacity-40"
+            >
+              Next
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
