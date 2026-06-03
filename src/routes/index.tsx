@@ -8,6 +8,7 @@ import { CustomerDetail } from "@/components/risk/CustomerDetail";
 import { ProductRiskChart } from "@/components/risk/ProductRiskChart";
 import { ProductBreakdown } from "@/components/risk/ProductBreakdown";
 import { ActionPlanner } from "@/components/risk/ActionPlanner";
+import { CollapsibleSection } from "@/components/risk/CollapsibleSection";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -67,18 +68,42 @@ function Dashboard() {
           </p>
         </div>
 
-        <ProductBreakdown period={period} onPeriodChange={setPeriod} onSelectCustomer={setSelected} />
+        <CollapsibleSection
+          title="Product-Wise Portfolio Snapshot"
+          description="Loan book, outstanding, at-risk exposure & due payments by product"
+        >
+          <ProductBreakdown period={period} onPeriodChange={setPeriod} onSelectCustomer={setSelected} />
+        </CollapsibleSection>
 
-        <PortfolioKPIs {...stats} customerCount={CUSTOMERS.length} period={period} onPeriodChange={setPeriod} />
+        <CollapsibleSection
+          title="Portfolio KPIs & Risk Distribution"
+          description="Headline exposure metrics and risk-band segmentation"
+        >
+          <PortfolioKPIs {...stats} customerCount={CUSTOMERS.length} period={period} onPeriodChange={setPeriod} />
+        </CollapsibleSection>
 
+        <CollapsibleSection
+          title="Loan Product Risk Movement"
+          description="Predicted score trajectory by product"
+        >
+          <ProductRiskChart />
+        </CollapsibleSection>
 
+        <CollapsibleSection
+          title="Action Planner"
+          description="Filter customers by recommended action and export KYC list"
+        >
+          <ActionPlanner onSelectCustomer={setSelected} />
+        </CollapsibleSection>
 
-        <ProductRiskChart />
-
-        <ActionPlanner onSelectCustomer={setSelected} />
-
-        <Watchlist onSelect={setSelected} selectedId={selected?.id} />
+        <CollapsibleSection
+          title="Customer Watchlist"
+          description="Sortable, filterable list of customers with AI explanations"
+        >
+          <Watchlist onSelect={setSelected} selectedId={selected?.id} />
+        </CollapsibleSection>
       </main>
+
 
 
       {selected && <CustomerDetail customer={selected} onClose={() => setSelected(null)} />}
