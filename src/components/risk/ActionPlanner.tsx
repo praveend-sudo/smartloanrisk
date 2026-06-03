@@ -89,6 +89,8 @@ function downloadCSV(filename: string, rows: Customer[], action: ActionOption) {
 export function ActionPlanner({ onSelectCustomer }: { onSelectCustomer?: (c: Customer) => void }) {
   const [actionKey, setActionKey] = useState<string>(ACTIONS[0].key);
   const action = useMemo(() => ACTIONS.find((a) => a.key === actionKey)!, [actionKey]);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 20;
 
   const rows = useMemo(
     () =>
@@ -97,6 +99,11 @@ export function ActionPlanner({ onSelectCustomer }: { onSelectCustomer?: (c: Cus
       ),
     [action],
   );
+
+  useEffect(() => { setPage(1); }, [actionKey]);
+
+  const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const pagedRows = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const totalExposure = useMemo(() => rows.reduce((s, c) => s + exposureOf(c), 0), [rows]);
 
