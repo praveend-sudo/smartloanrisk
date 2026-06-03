@@ -72,6 +72,7 @@ function Dashboard() {
         <CollapsibleSection
           title="Portfolio KPIs & Risk Distribution"
           description="Headline exposure metrics and risk-band segmentation"
+          icon={BarChart3}
         >
           <PortfolioKPIs {...stats} customerCount={CUSTOMERS.length} period={period} onPeriodChange={setPeriod} />
         </CollapsibleSection>
