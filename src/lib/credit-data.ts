@@ -193,9 +193,9 @@ function makePayments(rand: () => number, installment: number, count: number, sc
   const out: PaymentRecord[] = [];
   const today = new Date(2026, 5, 1);
   const lateProb =
-    scoreBand === "loyal" ? 0.02 : scoreBand === "stable" ? 0.08 : scoreBand === "watch" ? 0.25 : 0.5;
+    scoreBand === "loyal" ? 0.04 : scoreBand === "stable" ? 0.14 : scoreBand === "watch" ? 0.32 : 0.55;
   const missProb =
-    scoreBand === "loyal" ? 0 : scoreBand === "stable" ? 0.01 : scoreBand === "watch" ? 0.08 : 0.25;
+    scoreBand === "loyal" ? 0.01 : scoreBand === "stable" ? 0.04 : scoreBand === "watch" ? 0.15 : 0.35;
   for (let i = count - 1; i >= 0; i--) {
     const d = new Date(today);
     d.setMonth(d.getMonth() - i);
@@ -221,40 +221,46 @@ function makeCustomer(seed: number): Customer {
   const score = Math.floor(rand() * 1000);
   const band = getBand(score).id;
 
-  // Predictive deltas: lower current score → more downward drift.
-  const drift6 =
-    band === "loyal" ? rand() * 30 - 15
-    : band === "stable" ? rand() * 60 - 35
-    : band === "watch" ? -(rand() * 80 + 20)
-    : -(rand() * 120 + 30);
-  const drift12 = drift6 * (1.4 + rand() * 0.6);
+  // Volatile predictive deltas: wider swings, occasional shock moves & rebounds.
+  const shock = rand() < 0.18 ? (rand() < 0.5 ? -1 : 1) * (80 + rand() * 180) : 0;
+  const rebound = band !== "loyal" && rand() < 0.15 ? rand() * 140 : 0;
+  const baseDrift6 =
+    band === "loyal" ? rand() * 90 - 60
+    : band === "stable" ? rand() * 140 - 80
+    : band === "watch" ? rand() * 160 - 130
+    : rand() * 180 - 150;
+  const drift6 = baseDrift6 + shock + rebound;
+  const drift12 = drift6 * (0.6 + rand() * 1.8) + (rand() * 120 - 60);
   const score6m = Math.max(0, Math.min(999, Math.round(score + drift6)));
   const score12m = Math.max(0, Math.min(999, Math.round(score + drift12)));
 
-  const numLoans = 1 + Math.floor(rand() * 3);
+  const numLoans = 1 + Math.floor(rand() * 4);
   const loans: Loan[] = [];
   for (let i = 0; i < numLoans; i++) {
     const product = pick(PRODUCTS, rand);
-    const baseAmount =
-      product === "Mortgage" ? 180000 + Math.floor(rand() * 620000)
-      : product === "Auto Loan" ? 18000 + Math.floor(rand() * 55000)
-      : product === "Home Equity LOC" ? 25000 + Math.floor(rand() * 180000)
-      : product === "SBA Business Loan" ? 75000 + Math.floor(rand() * 425000)
-      : product === "Agricultural Loan" ? 50000 + Math.floor(rand() * 350000)
-      : product === "Trade Finance" ? 100000 + Math.floor(rand() * 900000)
-      : product === "Student Loan" ? 8000 + Math.floor(rand() * 60000)
-      : 5000 + Math.floor(rand() * 40000);
+    // Volatility multiplier — occasional jumbo / micro outliers.
+    const vol = rand() < 0.12 ? 0.2 + rand() * 0.4 : rand() < 0.12 ? 2 + rand() * 2.5 : 0.7 + rand() * 0.9;
+    const baseAmount = Math.round((
+      product === "Mortgage" ? 180000 + Math.floor(rand() * 820000)
+      : product === "Auto Loan" ? 12000 + Math.floor(rand() * 78000)
+      : product === "Home Equity LOC" ? 20000 + Math.floor(rand() * 260000)
+      : product === "SBA Business Loan" ? 50000 + Math.floor(rand() * 750000)
+      : product === "Agricultural Loan" ? 35000 + Math.floor(rand() * 520000)
+      : product === "Trade Finance" ? 80000 + Math.floor(rand() * 1500000)
+      : product === "Student Loan" ? 5000 + Math.floor(rand() * 95000)
+      : 3000 + Math.floor(rand() * 65000)
+    ) * vol);
     const termMonths =
       product === "Mortgage" ? 360
       : product === "Auto Loan" ? 60
       : product === "Student Loan" ? 120
       : product === "SBA Business Loan" ? 84
       : 48;
-    const remaining = Math.floor(rand() * termMonths * 0.9) + 6;
-    const apr = 3.5 + rand() * 9;
+    const remaining = Math.floor(rand() * termMonths * 0.95) + 3;
+    const apr = 2.9 + rand() * 14;
     const monthly = apr / 100 / 12;
     const installment = (baseAmount * monthly) / (1 - Math.pow(1 + monthly, -termMonths));
-    const outstanding = Math.round(installment * remaining * (0.85 + rand() * 0.15));
+    const outstanding = Math.round(installment * remaining * (0.55 + rand() * 0.55));
     loans.push({
       id: `LN-${seed}-${i}`,
       product,
@@ -269,15 +275,17 @@ function makeCustomer(seed: number): Customer {
     });
   }
 
-  const numCards = 1 + Math.floor(rand() * 3);
+  const numCards = 1 + Math.floor(rand() * 4);
   const cards: CreditCard[] = [];
   for (let i = 0; i < numCards; i++) {
-    const limit = Math.round((5000 + rand() * 45000) / 500) * 500;
-    const utilization =
-      band === "loyal" ? rand() * 0.25
-      : band === "stable" ? 0.2 + rand() * 0.35
-      : band === "watch" ? 0.5 + rand() * 0.4
-      : 0.7 + rand() * 0.3;
+    const limitVol = rand() < 0.15 ? 3 + rand() * 3 : 0.6 + rand() * 1.2;
+    const limit = Math.round((3000 + rand() * 55000) * limitVol / 500) * 500;
+    const utilBase =
+      band === "loyal" ? rand() * 0.35
+      : band === "stable" ? 0.1 + rand() * 0.6
+      : band === "watch" ? 0.35 + rand() * 0.6
+      : 0.55 + rand() * 0.5;
+    const utilization = Math.max(0, Math.min(1.1, utilBase + (rand() - 0.5) * 0.3));
     const balance = Math.round(limit * utilization);
     cards.push({
       id: `CC-${seed}-${i}`,
@@ -286,14 +294,17 @@ function makeCustomer(seed: number): Customer {
       creditLimit: limit,
       balance,
       minPayment: Math.max(35, Math.round(balance * 0.03)),
-      apr: Math.round((16 + rand() * 12) * 100) / 100,
+      apr: Math.round((14 + rand() * 18) * 100) / 100,
       status:
-        band === "risk" && rand() > 0.4 ? "90+ DPD"
-        : band === "watch" && rand() > 0.6 ? "30 DPD"
+        band === "risk" && rand() > 0.35 ? "90+ DPD"
+        : band === "risk" && rand() > 0.55 ? "60 DPD"
+        : band === "watch" && rand() > 0.5 ? "30 DPD"
+        : band === "stable" && rand() > 0.92 ? "30 DPD"
         : "Current",
     });
   }
 
+  const incomeVol = rand() < 0.1 ? 2 + rand() * 4 : 0.5 + rand() * 1.3;
   return {
     id: `C-${10000 + seed}`,
     name,
@@ -302,7 +313,7 @@ function makeCustomer(seed: number): Customer {
     city,
     state,
     occupation: pick(OCCUPATIONS, rand),
-    annualIncome: Math.round((50000 + rand() * 350000) / 1000) * 1000,
+    annualIncome: Math.round((40000 + rand() * 400000) * incomeVol / 1000) * 1000,
     scoreCurrent: score,
     score6m,
     score12m,
