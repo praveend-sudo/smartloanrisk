@@ -77,14 +77,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "Smart Credit Risk" },
+      { name: "description", content: "Credit Compass is a demo dashboard for financial institutions to visualize loan and credit card portfolios with simulated customer data." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "Smart Credit Risk" },
+      { property: "og:description", content: "Credit Compass is a demo dashboard for financial institutions to visualize loan and credit card portfolios with simulated customer data." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Smart Credit Risk" },
+      { name: "twitter:description", content: "Credit Compass is a demo dashboard for financial institutions to visualize loan and credit card portfolios with simulated customer data." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/739d5fcd-f798-4f44-b79f-4ae9693810f0/id-preview-55e6693d--29ca538f-3a42-442d-b1e6-9824706d0849.lovable.app-1780467652847.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/739d5fcd-f798-4f44-b79f-4ae9693810f0/id-preview-55e6693d--29ca538f-3a42-442d-b1e6-9824706d0849.lovable.app-1780467652847.png" },
     ],
     links: [
       {
