@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { BarChart3, Layers, TrendingUp, ClipboardCheck, ShieldAlert } from "lucide-react";
 import logosAsset from "@/assets/logos.png.asset.json";
 import { CUSTOMERS, portfolioStats, type Customer } from "@/lib/credit-data";
 import { PortfolioKPIs, type Period } from "@/components/risk/PortfolioKPIs";
