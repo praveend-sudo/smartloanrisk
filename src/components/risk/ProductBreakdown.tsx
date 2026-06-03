@@ -183,9 +183,92 @@ export function ProductBreakdown({
           </table>
         </div>
       </div>
+
+      <ProductCustomersDialog
+        product={openProduct}
+        onClose={() => setOpenProduct(null)}
+        onSelectCustomer={(c) => {
+          setOpenProduct(null);
+          onSelectCustomer?.(c);
+        }}
+      />
     </TooltipProvider>
   );
 }
+
+function ProductCustomersDialog({
+  product,
+  onClose,
+  onSelectCustomer,
+}: {
+  product: LoanProduct | "Credit Cards" | null;
+  onClose: () => void;
+  onSelectCustomer: (c: Customer) => void;
+}) {
+  const rows = useMemo(() => {
+    if (!product) return [];
+    return CUSTOMERS.filter((c) =>
+      product === "Credit Cards" ? c.cards.length > 0 : c.loans.some((l) => l.product === product),
+    )
+      .map((c) => {
+        const exposure =
+          product === "Credit Cards"
+            ? c.cards.reduce((s, cc) => s + cc.balance, 0)
+            : c.loans.filter((l) => l.product === product).reduce((s, l) => s + l.outstanding, 0);
+        return { c, exposure };
+      })
+      .sort((a, b) => a.c.scoreCurrent - b.c.scoreCurrent);
+  }, [product]);
+
+  return (
+    <Dialog open={!!product} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>{product} — Customers</DialogTitle>
+          <DialogDescription>
+            {rows.length} customers · sorted by current risk score (lowest first)
+          </DialogDescription>
+        </DialogHeader>
+        <div className="max-h-[60vh] overflow-y-auto">
+          <table className="w-full text-sm">
+            <thead className="sticky top-0 bg-card">
+              <tr className="border-b text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                <th className="px-3 py-2">Customer</th>
+                <th className="px-3 py-2 text-right">Exposure</th>
+                <th className="px-3 py-2 text-center">Now</th>
+                <th className="px-3 py-2 text-center">6 Months</th>
+                <th className="px-3 py-2 text-center">12 Months</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map(({ c, exposure }) => {
+                const d6 = c.score6m - c.scoreCurrent;
+                const d12 = c.score12m - c.scoreCurrent;
+                return (
+                  <tr
+                    key={c.id}
+                    onClick={() => onSelectCustomer(c)}
+                    className="border-b last:border-0 cursor-pointer transition hover:bg-secondary/40"
+                  >
+                    <td className="px-3 py-2.5">
+                      <div className="font-medium">{c.name}</div>
+                      <div className="text-xs text-muted-foreground">{c.id} · {c.city}, {c.state}</div>
+                    </td>
+                    <td className="px-3 py-2.5 text-right tabular-nums">{fmtUSD(exposure)}</td>
+                    <td className="px-3 py-2.5 text-center"><ScoreBadge score={c.scoreCurrent} size="sm" /></td>
+                    <td className="px-3 py-2.5 text-center"><ScoreBadge score={c.score6m} size="sm" delta={d6} /></td>
+                    <td className="px-3 py-2.5 text-center"><ScoreBadge score={c.score12m} size="sm" delta={d12} /></td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 
 function Legend({ label, tone }: { label: string; tone: "foreground" | "primary" | "risk" | "watch" }) {
   const color =
