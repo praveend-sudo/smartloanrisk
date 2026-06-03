@@ -23,7 +23,7 @@ export function CollapsibleSection({
         aria-expanded={open}
       >
         <div className="min-w-0">
-          <div className="text-sm font-semibold tracking-tight">{title}</div>
+          <div className="text-xl font-semibold tracking-tight">{title}</div>
           {description && <div className="text-xs text-muted-foreground">{description}</div>}
         </div>
         <ChevronDown
