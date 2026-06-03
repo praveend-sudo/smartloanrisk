@@ -1,4 +1,7 @@
 import { BANDS, fmtUSD, type ScoreBand } from "@/lib/credit-data";
+import { cn } from "@/lib/utils";
+
+export type Period = "current" | "6m" | "12m";
 
 interface Props {
   totalLoanAmount: number;
@@ -9,6 +12,8 @@ interface Props {
   bandCounts: Record<ScoreBand, number>;
   bandExposure: Record<ScoreBand, number>;
   customerCount: number;
+  period: Period;
+  onPeriodChange: (p: Period) => void;
 }
 
 export function PortfolioKPIs(p: Props) {
@@ -26,6 +31,26 @@ export function PortfolioKPIs(p: Props) {
       accent: true,
     },
   ];
+
+  const Tab = ({
+    id,
+    label,
+  }: {
+    id: Period;
+    label: string;
+  }) => (
+    <button
+      onClick={() => p.onPeriodChange(id)}
+      className={cn(
+        "rounded-md px-3 py-1.5 text-xs font-medium transition",
+        p.period === id
+          ? "bg-primary text-primary-foreground"
+          : "bg-secondary text-secondary-foreground hover:bg-secondary/70",
+      )}
+    >
+      {label}
+    </button>
+  );
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -45,14 +70,19 @@ export function PortfolioKPIs(p: Props) {
       ))}
 
       <div className="md:col-span-2 xl:col-span-4 rounded-xl border bg-card p-5">
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
               Portfolio Distribution by Risk Band
             </div>
             <div className="mt-0.5 text-sm text-muted-foreground">Smart Credit Score 0–999 · live segmentation</div>
           </div>
-          <div className="text-xs text-muted-foreground">{p.customerCount} customers</div>
+          <div className="flex items-center gap-2">
+            <Tab id="current" label="Now" />
+            <Tab id="6m" label="6 Months" />
+            <Tab id="12m" label="12 Months" />
+            <span className="ml-1 text-xs text-muted-foreground">{p.customerCount} customers</span>
+          </div>
         </div>
 
         <div className="flex h-3 w-full overflow-hidden rounded-full bg-secondary">

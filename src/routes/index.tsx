@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import logosAsset from "@/assets/logos.png.asset.json";
 import { CUSTOMERS, portfolioStats, type Customer } from "@/lib/credit-data";
-import { PortfolioKPIs } from "@/components/risk/PortfolioKPIs";
+import { PortfolioKPIs, type Period } from "@/components/risk/PortfolioKPIs";
 import { Watchlist } from "@/components/risk/Watchlist";
 import { CustomerDetail } from "@/components/risk/CustomerDetail";
 
@@ -21,8 +21,15 @@ export const Route = createFileRoute("/")({
 });
 
 function Dashboard() {
-  const stats = useMemo(() => portfolioStats(CUSTOMERS), []);
+  const statsCurrent = useMemo(() => portfolioStats(CUSTOMERS, "scoreCurrent"), []);
+  const stats6m = useMemo(() => portfolioStats(CUSTOMERS, "score6m"), []);
+  const stats12m = useMemo(() => portfolioStats(CUSTOMERS, "score12m"), []);
+  const statsMap = { current: statsCurrent, "6m": stats6m, "12m": stats12m };
+
+  const [period, setPeriod] = useState<Period>("current");
   const [selected, setSelected] = useState<Customer | null>(null);
+
+  const stats = statsMap[period];
 
   return (
     <div className="min-h-screen bg-background">
@@ -57,7 +64,7 @@ function Dashboard() {
           </p>
         </div>
 
-        <PortfolioKPIs {...stats} customerCount={CUSTOMERS.length} />
+        <PortfolioKPIs {...stats} customerCount={CUSTOMERS.length} period={period} onPeriodChange={setPeriod} />
 
         <Watchlist onSelect={setSelected} selectedId={selected?.id} />
       </main>

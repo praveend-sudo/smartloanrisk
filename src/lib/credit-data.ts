@@ -315,7 +315,7 @@ export const CUSTOMERS: Customer[] = Array.from({ length: 48 }, (_, i) =>
   makeCustomer(hash(`fidem-customer-${i}`)),
 );
 
-export function portfolioStats(customers: Customer[]) {
+export function portfolioStats(customers: Customer[], scoreField: "scoreCurrent" | "score6m" | "score12m" = "scoreCurrent") {
   let totalLoanAmount = 0;
   let totalOutstanding = 0;
   let totalCardLimit = 0;
@@ -324,7 +324,7 @@ export function portfolioStats(customers: Customer[]) {
   const bandExposure: Record<ScoreBand, number> = { loyal: 0, stable: 0, watch: 0, risk: 0 };
 
   for (const c of customers) {
-    const b = getBand(c.scoreCurrent).id;
+    const b = getBand(c[scoreField]).id;
     bandCounts[b]++;
     for (const l of c.loans) {
       totalLoanAmount += l.principal;
