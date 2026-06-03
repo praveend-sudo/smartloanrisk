@@ -69,17 +69,17 @@ function Dashboard() {
         </div>
 
         <CollapsibleSection
-          title="Product-Wise Portfolio Snapshot"
-          description="Loan book, outstanding, at-risk exposure & due payments by product"
-        >
-          <ProductBreakdown period={period} onPeriodChange={setPeriod} onSelectCustomer={setSelected} />
-        </CollapsibleSection>
-
-        <CollapsibleSection
           title="Portfolio KPIs & Risk Distribution"
           description="Headline exposure metrics and risk-band segmentation"
         >
           <PortfolioKPIs {...stats} customerCount={CUSTOMERS.length} period={period} onPeriodChange={setPeriod} />
+        </CollapsibleSection>
+
+        <CollapsibleSection
+          title="Product-Wise Portfolio Snapshot"
+          description="Loan book, outstanding, at-risk exposure & due payments by product"
+        >
+          <ProductBreakdown period={period} onPeriodChange={setPeriod} onSelectCustomer={setSelected} />
         </CollapsibleSection>
 
         <CollapsibleSection
