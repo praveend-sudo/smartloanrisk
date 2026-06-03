@@ -80,6 +80,7 @@ export function Watchlist({
               <th className="px-3 py-3 text-left font-medium">12-Month Forecast</th>
               <th className="px-3 py-3 text-right font-medium">Loan Amount</th>
               <th className="px-3 py-3 text-right font-medium">Installment</th>
+              <th className="px-3 py-3 text-center font-medium">AI Explain</th>
               <th className="px-5 py-3 text-right font-medium" />
             </tr>
           </thead>
