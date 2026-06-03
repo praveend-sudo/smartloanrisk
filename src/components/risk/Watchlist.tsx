@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { CUSTOMERS, fmtUSDFull, getBand, type Customer } from "@/lib/credit-data";
 import { ScoreBadge } from "./ScoreBadge";
 import { cn } from "@/lib/utils";
+import { AIExplainCell } from "./AIExplainCell";
 
 export function Watchlist({
   onSelect,
