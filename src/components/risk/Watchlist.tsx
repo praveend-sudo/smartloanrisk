@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { CUSTOMERS, fmtUSDFull, getBand, type Customer } from "@/lib/credit-data";
 import { ScoreBadge } from "./ScoreBadge";
 import { cn } from "@/lib/utils";
+import { AIExplainCell } from "./AIExplainCell";
 
 export function Watchlist({
   onSelect,
@@ -79,6 +80,7 @@ export function Watchlist({
               <th className="px-3 py-3 text-left font-medium">12-Month Forecast</th>
               <th className="px-3 py-3 text-right font-medium">Loan Amount</th>
               <th className="px-3 py-3 text-right font-medium">Installment</th>
+              <th className="px-3 py-3 text-center font-medium">AI Explain</th>
               <th className="px-5 py-3 text-right font-medium" />
             </tr>
           </thead>
@@ -109,6 +111,9 @@ export function Watchlist({
                   </td>
                   <td className="px-3 py-3 text-right tabular-nums">{fmtUSDFull(principal)}</td>
                   <td className="px-3 py-3 text-right tabular-nums">{fmtUSDFull(installment)}/mo</td>
+                  <td className="px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                    <AIExplainCell customer={c} />
+                  </td>
                   <td className="px-5 py-3 text-right">
                     <span className="text-xs font-medium text-accent">View →</span>
                   </td>
@@ -117,7 +122,7 @@ export function Watchlist({
             })}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-5 py-10 text-center text-sm text-muted-foreground">
+                <td colSpan={8} className="px-5 py-10 text-center text-sm text-muted-foreground">
                   No customers match the current filter.
                 </td>
               </tr>
