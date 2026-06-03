@@ -31,6 +31,8 @@ export function Watchlist({
     col: "score12m",
     dir: "asc",
   });
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 20;
 
   const rows = useMemo(() => {
     const filtered = CUSTOMERS.filter((c) => {
