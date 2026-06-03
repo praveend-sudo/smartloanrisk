@@ -5,6 +5,7 @@ import { CUSTOMERS, portfolioStats, type Customer } from "@/lib/credit-data";
 import { PortfolioKPIs, type Period } from "@/components/risk/PortfolioKPIs";
 import { Watchlist } from "@/components/risk/Watchlist";
 import { CustomerDetail } from "@/components/risk/CustomerDetail";
+import { ProductRiskChart } from "@/components/risk/ProductRiskChart";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -65,6 +66,8 @@ function Dashboard() {
         </div>
 
         <PortfolioKPIs {...stats} customerCount={CUSTOMERS.length} period={period} onPeriodChange={setPeriod} />
+
+        <ProductRiskChart />
 
         <Watchlist onSelect={setSelected} selectedId={selected?.id} />
       </main>
