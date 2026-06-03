@@ -7,6 +7,7 @@ import { Watchlist } from "@/components/risk/Watchlist";
 import { CustomerDetail } from "@/components/risk/CustomerDetail";
 import { ProductRiskChart } from "@/components/risk/ProductRiskChart";
 import { ProductBreakdown } from "@/components/risk/ProductBreakdown";
+import { ActionPlanner } from "@/components/risk/ActionPlanner";
 
 export const Route = createFileRoute("/")({
   head: () => ({
