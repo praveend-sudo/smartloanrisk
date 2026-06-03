@@ -113,8 +113,17 @@ export function AIExplainCell({ customer }: { customer: Customer }) {
                 </div>
               )}
               {text && (
-                <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
-                  {text}
+                <div
+                  className={cn(
+                    "text-sm leading-relaxed text-foreground space-y-3",
+                    "[&_h3]:text-xs [&_h3]:font-semibold [&_h3]:uppercase [&_h3]:tracking-wider [&_h3]:text-muted-foreground [&_h3]:mt-3 [&_h3]:mb-1.5",
+                    "[&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1",
+                    "[&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:space-y-1",
+                    "[&_strong]:font-semibold [&_strong]:text-foreground",
+                    "[&_p]:my-1",
+                  )}
+                >
+                  <ReactMarkdown>{text}</ReactMarkdown>
                 </div>
               )}
             </div>
