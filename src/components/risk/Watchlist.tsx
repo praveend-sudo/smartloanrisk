@@ -11,16 +11,14 @@ export function Watchlist({
   onSelect: (c: Customer) => void;
   selectedId?: string;
 }) {
-  const [filter, setFilter] = useState<"all" | "watch" | "risk" | "drop">("all");
+  const [filter, setFilter] = useState<"all" | "watch" | "risk">("all");
   const [q, setQ] = useState("");
 
   const rows = useMemo(() => {
     return CUSTOMERS.filter((c) => {
       const b = getBand(c.scoreCurrent).id;
-      const drop = c.score12m < c.scoreCurrent - 40;
       if (filter === "watch" && b !== "watch") return false;
       if (filter === "risk" && b !== "risk") return false;
-      if (filter === "drop" && !drop) return false;
       if (q && !c.name.toLowerCase().includes(q.toLowerCase()) && !c.id.toLowerCase().includes(q.toLowerCase()))
         return false;
       return true;
