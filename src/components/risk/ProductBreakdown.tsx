@@ -1,5 +1,7 @@
 import { useMemo } from "react";
 import { CUSTOMERS, fmtUSD, productStats } from "@/lib/credit-data";
+import type { Period } from "./PortfolioKPIs";
+import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Building2,
@@ -10,6 +12,7 @@ import {
   Briefcase,
   Sprout,
   Ship,
+  CreditCard,
   type LucideIcon,
 } from "lucide-react";
 
@@ -22,10 +25,24 @@ const ICONS: Record<string, LucideIcon> = {
   "SBA Business Loan": Briefcase,
   "Agricultural Loan": Sprout,
   "Trade Finance": Ship,
+  "Credit Cards": CreditCard,
 };
 
-export function ProductBreakdown() {
-  const stats = useMemo(() => productStats(CUSTOMERS), []);
+const PERIOD_FIELD = {
+  current: "scoreCurrent",
+  "6m": "score6m",
+  "12m": "score12m",
+} as const;
+
+export function ProductBreakdown({
+  period,
+  onPeriodChange,
+}: {
+  period: Period;
+  onPeriodChange: (p: Period) => void;
+}) {
+  const stats = useMemo(() => productStats(CUSTOMERS, PERIOD_FIELD[period]), [period]);
+
   const totals = useMemo(
     () =>
       stats.reduce(
@@ -57,7 +74,24 @@ export function ProductBreakdown() {
             <Legend label="Outstanding" tone="primary" />
             <Legend label="At-Risk" tone="risk" />
             <Legend label="Due Payments" tone="watch" />
+            <div className="ml-2 flex items-center gap-1.5">
+              {(["current", "6m", "12m"] as const).map((id) => (
+                <button
+                  key={id}
+                  onClick={() => onPeriodChange(id)}
+                  className={cn(
+                    "rounded-md px-2.5 py-1 text-xs font-medium transition",
+                    period === id
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary text-secondary-foreground hover:bg-secondary/70",
+                  )}
+                >
+                  {id === "current" ? "Now" : id === "6m" ? "6M" : "12M"}
+                </button>
+              ))}
+            </div>
           </div>
+
         </div>
 
         <div className="overflow-x-auto">

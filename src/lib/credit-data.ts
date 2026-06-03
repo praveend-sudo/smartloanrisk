@@ -349,7 +349,7 @@ export function portfolioStats(customers: Customer[], scoreField: "scoreCurrent"
 }
 
 export interface ProductStat {
-  product: LoanProduct;
+  product: LoanProduct | "Credit Cards";
   loanBook: number;
   outstanding: number;
   atRiskExposure: number;
@@ -357,36 +357,47 @@ export interface ProductStat {
   loanCount: number;
 }
 
-export function productStats(customers: Customer[]): ProductStat[] {
-  const map = new Map<LoanProduct, ProductStat>();
+export function productStats(
+  customers: Customer[],
+  scoreField: "scoreCurrent" | "score6m" | "score12m" = "scoreCurrent",
+): ProductStat[] {
+  const map = new Map<ProductStat["product"], ProductStat>();
+  const ensure = (key: ProductStat["product"]): ProductStat => {
+    let s = map.get(key);
+    if (!s) {
+      s = { product: key, loanBook: 0, outstanding: 0, atRiskExposure: 0, duePayments: 0, loanCount: 0 };
+      map.set(key, s);
+    }
+    return s;
+  };
+
   for (const c of customers) {
-    const band = getBand(c.scoreCurrent).id;
+    const band = getBand(c[scoreField]).id;
     const atRisk = band === "watch" || band === "risk";
+
     for (const l of c.loans) {
-      let s = map.get(l.product);
-      if (!s) {
-        s = {
-          product: l.product,
-          loanBook: 0,
-          outstanding: 0,
-          atRiskExposure: 0,
-          duePayments: 0,
-          loanCount: 0,
-        };
-        map.set(l.product, s);
-      }
+      const s = ensure(l.product);
       s.loanBook += l.principal;
       s.outstanding += l.outstanding;
       s.loanCount += 1;
       if (atRisk) s.atRiskExposure += l.outstanding;
-      // Due payments = sum of late/missed installment amounts in last 12 months
       for (const p of l.payments) {
         if (p.status !== "Paid") s.duePayments += l.installment;
       }
     }
+
+    for (const cc of c.cards) {
+      const s = ensure("Credit Cards");
+      s.loanBook += cc.creditLimit;
+      s.outstanding += cc.balance;
+      s.loanCount += 1;
+      if (atRisk) s.atRiskExposure += cc.balance;
+      if (cc.status !== "Current") s.duePayments += cc.minPayment;
+    }
   }
   return Array.from(map.values()).sort((a, b) => b.outstanding - a.outstanding);
 }
+
 
 
 export const fmtUSD = (n: number) =>
