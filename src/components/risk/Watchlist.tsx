@@ -15,23 +15,73 @@ export function Watchlist({
 }) {
   const [filter, setFilter] = useState<"all" | "watch" | "risk">("all");
   const [q, setQ] = useState("");
+  const [sort, setSort] = useState<{ col: string; dir: "asc" | "desc" }>({
+    col: "score12m",
+    dir: "asc",
+  });
 
   const rows = useMemo(() => {
-    return CUSTOMERS.filter((c) => {
+    const filtered = CUSTOMERS.filter((c) => {
       const b = getBand(c.scoreCurrent).id;
       if (filter === "watch" && b !== "watch") return false;
       if (filter === "risk" && b !== "risk") return false;
       if (q && !c.name.toLowerCase().includes(q.toLowerCase()) && !c.id.toLowerCase().includes(q.toLowerCase()))
         return false;
       return true;
-    })
-      .map((c) => {
-        const principal = c.loans.reduce((s, l) => s + l.principal, 0);
-        const installment = c.loans.reduce((s, l) => s + l.installment, 0);
-        return { c, principal, installment };
-      })
-      .sort((a, b) => a.c.score12m - b.c.score12m);
-  }, [filter, q]);
+    }).map((c) => {
+      const principal = c.loans.reduce((s, l) => s + l.principal, 0);
+      const installment = c.loans.reduce((s, l) => s + l.installment, 0);
+      return { c, principal, installment };
+    });
+
+    const { col, dir } = sort;
+    const m = dir === "asc" ? 1 : -1;
+    filtered.sort((a, b) => {
+      switch (col) {
+        case "name": return a.c.name.localeCompare(b.c.name) * m;
+        case "scoreCurrent": return (a.c.scoreCurrent - b.c.scoreCurrent) * m;
+        case "score6m": return (a.c.score6m - b.c.score6m) * m;
+        case "score12m": return (a.c.score12m - b.c.score12m) * m;
+        case "principal": return (a.principal - b.principal) * m;
+        case "installment": return (a.installment - b.installment) * m;
+        default: return 0;
+      }
+    });
+    return filtered;
+  }, [filter, q, sort]);
+
+  const SortHeader = ({
+    col,
+    children,
+    align = "left",
+    className,
+  }: {
+    col: string;
+    children: React.ReactNode;
+    align?: "left" | "right" | "center";
+    className?: string;
+  }) => {
+    const active = sort.col === col;
+    const Icon = active ? (sort.dir === "asc" ? ArrowUp : ArrowDown) : ArrowUpDown;
+    const alignClass =
+      align === "right" ? "text-right" : align === "center" ? "text-center" : "text-left";
+    return (
+      <th
+        className={cn("cursor-pointer select-none px-3 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground", alignClass, className)}
+        onClick={() =>
+          setSort((s) => ({
+            col,
+            dir: s.col === col && s.dir === "asc" ? "desc" : "asc",
+          }))
+        }
+      >
+        <span className="inline-flex items-center gap-1">
+          {children}
+          <Icon className={cn("h-3 w-3", active && "text-primary")} />
+        </span>
+      </th>
+    );
+  };
 
   const FilterBtn = ({ id, label }: { id: typeof filter; label: string }) => (
     <button
