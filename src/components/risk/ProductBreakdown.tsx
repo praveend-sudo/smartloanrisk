@@ -40,11 +40,15 @@ const PERIOD_FIELD = {
 export function ProductBreakdown({
   period,
   onPeriodChange,
+  onSelectCustomer,
 }: {
   period: Period;
   onPeriodChange: (p: Period) => void;
+  onSelectCustomer?: (c: Customer) => void;
 }) {
   const stats = useMemo(() => productStats(CUSTOMERS, PERIOD_FIELD[period]), [period]);
+  const [openProduct, setOpenProduct] = useState<LoanProduct | "Credit Cards" | null>(null);
+
 
   const totals = useMemo(
     () =>
