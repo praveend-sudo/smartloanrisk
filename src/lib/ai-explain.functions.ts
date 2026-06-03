@@ -35,7 +35,20 @@ Late payments (last 12mo): ${data.latePayments}
 Missed payments (last 12mo): ${data.missedPayments}
 Loan products: ${data.productMix.join(", ")}
 
-In 3-4 short bullet points, explain WHY this customer has this rating and the predicted trajectory. Cite the specific numbers above. Plain text, one bullet per line starting with "• ". No preamble.`;
+Produce a structured analyst note using EXACTLY these three markdown sections and headings, in this order. Cite the specific numbers above wherever relevant. No preamble, no closing remarks.
+
+### Risk Narrative
+2-3 sentences summarizing the customer's current standing and predicted 6/12-month trajectory.
+
+### Top 3 Drivers
+1. **<driver>** — one-line evidence with numbers.
+2. **<driver>** — one-line evidence with numbers.
+3. **<driver>** — one-line evidence with numbers.
+
+### Next Steps to Improve Score
+- **<action>** — specific, measurable step (include a target number, e.g. "bring utilization below 30%").
+- **<action>** — specific, measurable step.
+- **<action>** — specific, measurable step.`;
 
     const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
