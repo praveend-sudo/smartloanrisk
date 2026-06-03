@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { BarChart3, Layers, TrendingUp, ClipboardCheck, ShieldAlert } from "lucide-react";
 import logosAsset from "@/assets/logos.png.asset.json";
 import { CUSTOMERS, portfolioStats, type Customer } from "@/lib/credit-data";
 import { PortfolioKPIs, type Period } from "@/components/risk/PortfolioKPIs";
@@ -71,6 +72,7 @@ function Dashboard() {
         <CollapsibleSection
           title="Portfolio KPIs & Risk Distribution"
           description="Headline exposure metrics and risk-band segmentation"
+          icon={BarChart3}
         >
           <PortfolioKPIs {...stats} customerCount={CUSTOMERS.length} period={period} onPeriodChange={setPeriod} />
         </CollapsibleSection>
@@ -78,6 +80,7 @@ function Dashboard() {
         <CollapsibleSection
           title="Product-Wise Portfolio Snapshot"
           description="Loan book, outstanding, at-risk exposure & due payments by product"
+          icon={Layers}
         >
           <ProductBreakdown period={period} onPeriodChange={setPeriod} onSelectCustomer={setSelected} />
         </CollapsibleSection>
@@ -85,6 +88,7 @@ function Dashboard() {
         <CollapsibleSection
           title="Loan Product Risk Movement"
           description="Predicted score trajectory by product"
+          icon={TrendingUp}
         >
           <ProductRiskChart />
         </CollapsibleSection>
@@ -92,6 +96,7 @@ function Dashboard() {
         <CollapsibleSection
           title="Action Planner"
           description="Filter customers by recommended action and export KYC list"
+          icon={ClipboardCheck}
         >
           <ActionPlanner onSelectCustomer={setSelected} />
         </CollapsibleSection>
@@ -99,6 +104,7 @@ function Dashboard() {
         <CollapsibleSection
           title="Customer Watchlist"
           description="Sortable, filterable list of customers with AI explanations"
+          icon={ShieldAlert}
         >
           <Watchlist onSelect={setSelected} selectedId={selected?.id} />
         </CollapsibleSection>
