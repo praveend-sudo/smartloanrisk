@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { CUSTOMERS, fmtUSD, productStats, type Customer, type LoanProduct } from "@/lib/credit-data";
 import type { Period } from "./PortfolioKPIs";
 import { ScoreBadge } from "./ScoreBadge";
