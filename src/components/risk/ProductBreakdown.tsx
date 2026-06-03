@@ -207,6 +207,9 @@ function ProductCustomersDialog({
   onClose: () => void;
   onSelectCustomer: (c: Customer) => void;
 }) {
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 20;
+
   const rows = useMemo(() => {
     if (!product) return [];
     return CUSTOMERS.filter((c) =>
@@ -221,6 +224,11 @@ function ProductCustomersDialog({
       })
       .sort((a, b) => a.c.scoreCurrent - b.c.scoreCurrent);
   }, [product]);
+
+  useEffect(() => { setPage(1); }, [product]);
+
+  const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const pagedRows = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <Dialog open={!!product} onOpenChange={(o) => !o && onClose()}>
