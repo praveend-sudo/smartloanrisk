@@ -119,7 +119,11 @@ export function ProductBreakdown({
                 const Icon = ICONS[s.product] ?? Wallet;
                 const riskPct = s.outstanding > 0 ? (s.atRiskExposure / s.outstanding) * 100 : 0;
                 return (
-                  <tr key={s.product} className="border-b last:border-0 transition hover:bg-secondary/40">
+                  <tr
+                    key={s.product}
+                    onClick={() => setOpenProduct(s.product)}
+                    className="border-b last:border-0 transition hover:bg-secondary/40 cursor-pointer"
+                  >
                     <td className="px-3 py-3">
                       <div className="flex items-center gap-2.5">
                         <span className="flex h-7 w-7 items-center justify-center rounded-md bg-secondary text-foreground/80">
