@@ -59,7 +59,7 @@ function Dashboard() {
 
       <main className="mx-auto max-w-[1400px] space-y-6 px-6 py-6">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Portfolio Overview</h1>
+          <h1 className="text-2xl font-semibold tracking-tight rounded-lg">Portfolio Overview</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Total exposure, risk segmentation and predictive watchlist across all loan and credit-card products.
           </p>
