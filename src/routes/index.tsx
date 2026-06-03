@@ -64,7 +64,7 @@ function Dashboard() {
           </p>
         </div>
 
-        <PortfolioKPIs {...stats} customerCount={CUSTOMERS.length} />
+        <PortfolioKPIs {...stats} customerCount={CUSTOMERS.length} period={period} onPeriodChange={setPeriod} />
 
         <Watchlist onSelect={setSelected} selectedId={selected?.id} />
       </main>
