@@ -3,7 +3,7 @@ import { CUSTOMERS, fmtUSDFull, getBand, type Customer, type LoanProduct } from 
 import { ScoreBadge } from "./ScoreBadge";
 import { cn } from "@/lib/utils";
 import { AIExplainCell } from "./AIExplainCell";
-import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from "lucide-react";
 
 const PRODUCT_OPTIONS: Array<LoanProduct | "All"> = [
   "All",
