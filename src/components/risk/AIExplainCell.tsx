@@ -7,9 +7,7 @@ import { cn } from "@/lib/utils";
 function buildExplanation(customer: Customer): string {
   const band = getBand(customer.scoreCurrent);
   const totalLoanOutstanding = customer.loans.reduce((s, l) => s + l.outstanding, 0);
-  const totalCardLimit = customer.cards.reduce((s, c) => s + c.creditLimit, 0);
-  const totalCardBalance = customer.cards.reduce((s, c) => s + c.balance, 0);
-  const util = totalCardLimit ? Math.round((totalCardBalance / totalCardLimit) * 100) : 0;
+  const totalLoanBook = customer.loans.reduce((s, l) => s + l.principal, 0);
   const allPayments = customer.loans.flatMap((l) => l.payments);
   const late = allPayments.filter((p) => p.status === "Late").length;
   const missed = allPayments.filter((p) => p.status === "Missed").length;
@@ -18,8 +16,9 @@ function buildExplanation(customer: Customer): string {
   const delta12 = customer.score12m - customer.scoreCurrent;
   const dir = (d: number) => (d > 5 ? "improvement" : d < -5 ? "deterioration" : "stable performance");
   const fmt = (n: number) => `$${n.toLocaleString()}`;
+  const paidPct = totalLoanBook > 0 ? Math.round(((totalLoanBook - totalLoanOutstanding) / totalLoanBook) * 100) : 0;
 
-  const narrative = `${customer.name} currently sits in the **${band.label}** tier with a score of **${customer.scoreCurrent}/999**. Forecasts indicate ${dir(delta6)} over 6 months (${delta6 >= 0 ? "+" : ""}${delta6} pts) and ${dir(delta12)} over 12 months (${delta12 >= 0 ? "+" : ""}${delta12} pts). Combined exposure across ${products.length} loan product${products.length > 1 ? "s" : ""} totals ${fmt(totalLoanOutstanding)} outstanding, with revolving card utilization at ${util}%.`;
+  const narrative = `${customer.name} currently sits in the **${band.label}** tier with a score of **${customer.scoreCurrent}/999**. Forecasts indicate ${dir(delta6)} over 6 months (${delta6 >= 0 ? "+" : ""}${delta6} pts) and ${dir(delta12)} over 12 months (${delta12 >= 0 ? "+" : ""}${delta12} pts). Combined exposure across ${products.length} loan product${products.length > 1 ? "s" : ""} totals ${fmt(totalLoanOutstanding)} outstanding (${paidPct}% of original book repaid).`;
 
   const driverPool: Array<{ key: string; weight: number; line: string }> = [
     {
