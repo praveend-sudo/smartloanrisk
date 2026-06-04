@@ -22,9 +22,9 @@ function buildExplanation(customer: Customer): string {
 
   const driverPool: Array<{ key: string; weight: number; line: string }> = [
     {
-      key: "util",
-      weight: util > 70 ? 95 : util > 40 ? 60 : 25,
-      line: `**Card utilization ${util}%** — ${fmt(totalCardBalance)} balance against ${fmt(totalCardLimit)} limit ${util > 70 ? "is well above the 30% healthy threshold" : util > 40 ? "exceeds the recommended 30% threshold" : "remains within healthy range"}.`,
+      key: "repayment",
+      weight: paidPct >= 50 ? 70 : paidPct >= 25 ? 45 : 25,
+      line: `**${paidPct}% of principal repaid** — ${fmt(totalLoanOutstanding)} remaining against ${fmt(totalLoanBook)} originated ${paidPct >= 50 ? "demonstrates strong amortization discipline" : paidPct >= 25 ? "is in line with current term schedules" : "leaves the majority of the book still at risk"}.`,
     },
     {
       key: "missed",
