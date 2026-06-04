@@ -348,14 +348,6 @@ export function productStats(
       }
     }
 
-    for (const cc of c.cards) {
-      const s = ensure("Credit Cards");
-      s.loanBook += cc.creditLimit;
-      s.outstanding += cc.balance;
-      s.loanCount += 1;
-      if (atRisk) s.atRiskExposure += cc.balance;
-      if (cc.status !== "Current") s.duePayments += cc.minPayment;
-    }
   }
   return Array.from(map.values()).sort((a, b) => b.outstanding - a.outstanding);
 }
