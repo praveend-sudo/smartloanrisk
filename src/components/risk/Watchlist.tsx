@@ -162,7 +162,7 @@ export function Watchlist({
             </tr>
           </thead>
           <tbody>
-            {pagedRows.map(({ c, principal, installment }) => {
+            {pagedRows.map(({ c, principal, installment, products }) => {
               const selected = c.id === selectedId;
               return (
                 <tr
@@ -177,6 +177,18 @@ export function Watchlist({
                     <div className="font-medium">{c.name}</div>
                     <div className="text-xs text-muted-foreground">
                       {c.id} · {c.city}, {c.state}
+                    </div>
+                  </td>
+                  <td className="px-3 py-3">
+                    <div className="flex flex-wrap gap-1">
+                      {products.map((p) => (
+                        <span
+                          key={p}
+                          className="inline-flex items-center rounded-md bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground"
+                        >
+                          {p}
+                        </span>
+                      ))}
                     </div>
                   </td>
                   <td className="px-3 py-3"><ScoreBadge score={c.scoreCurrent} /></td>
