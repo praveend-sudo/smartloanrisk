@@ -8,8 +8,6 @@ export type Period = "current" | "6m";
 interface Props {
   totalLoanAmount: number;
   totalOutstanding: number;
-  totalCardLimit: number;
-  totalCardBalance: number;
   atRiskExposure: number;
   bandCounts: Record<ScoreBand, number>;
   bandExposure: Record<ScoreBand, number>;
@@ -19,13 +17,13 @@ interface Props {
 }
 
 export function PortfolioKPIs(p: Props) {
-  const totalExposure = p.totalOutstanding + p.totalCardBalance;
-  const riskPct = totalExposure > 0 ? (p.atRiskExposure / totalExposure) * 100 : 0;
+  const riskPct = p.totalOutstanding > 0 ? (p.atRiskExposure / p.totalOutstanding) * 100 : 0;
+  const utilPct = p.totalLoanAmount > 0 ? (p.totalOutstanding / p.totalLoanAmount) * 100 : 0;
 
   const kpis = [
     { label: "Total Loan Book", value: fmtUSD(p.totalLoanAmount), sub: `${p.customerCount} customers` },
-    { label: "Outstanding Balance", value: fmtUSD(p.totalOutstanding), sub: "Active loans" },
-    { label: "Card Credit Issued", value: fmtUSD(p.totalCardLimit), sub: `Utilization ${((p.totalCardBalance / p.totalCardLimit) * 100).toFixed(1)}%` },
+    { label: "Outstanding Balance", value: fmtUSD(p.totalOutstanding), sub: `Utilization ${utilPct.toFixed(1)}%` },
+    { label: "Active Loans", value: String(Object.values(p.bandCounts).reduce((a, b) => a + b, 0)), sub: "Across 3 products" },
     {
       label: "At-Risk Exposure",
       value: fmtUSD(p.atRiskExposure),
