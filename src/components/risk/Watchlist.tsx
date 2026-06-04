@@ -10,11 +10,6 @@ const PRODUCT_OPTIONS: Array<LoanProduct | "All"> = [
   "Mortgage",
   "Auto Loan",
   "Personal Loan",
-  "Home Equity LOC",
-  "Student Loan",
-  "SBA Business Loan",
-  "Agricultural Loan",
-  "Trade Finance",
 ];
 
 export function Watchlist({
