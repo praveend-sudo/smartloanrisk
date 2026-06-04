@@ -237,18 +237,11 @@ function makeCustomer(seed: number): Customer {
     const baseAmount = Math.round((
       product === "Mortgage" ? 180000 + Math.floor(rand() * 820000)
       : product === "Auto Loan" ? 12000 + Math.floor(rand() * 78000)
-      : product === "Home Equity LOC" ? 20000 + Math.floor(rand() * 260000)
-      : product === "SBA Business Loan" ? 50000 + Math.floor(rand() * 750000)
-      : product === "Agricultural Loan" ? 35000 + Math.floor(rand() * 520000)
-      : product === "Trade Finance" ? 80000 + Math.floor(rand() * 1500000)
-      : product === "Student Loan" ? 5000 + Math.floor(rand() * 95000)
       : 3000 + Math.floor(rand() * 65000)
     ) * vol);
     const termMonths =
       product === "Mortgage" ? 360
       : product === "Auto Loan" ? 60
-      : product === "Student Loan" ? 120
-      : product === "SBA Business Loan" ? 84
       : 48;
     const remaining = Math.floor(rand() * termMonths * 0.95) + 3;
     const apr = 2.9 + rand() * 14;
