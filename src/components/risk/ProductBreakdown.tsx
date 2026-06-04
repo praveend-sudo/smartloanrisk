@@ -246,13 +246,11 @@ function ProductCustomersDialog({
                 <th className="px-3 py-2 text-right">Exposure</th>
                 <th className="px-3 py-2 text-center">Now</th>
                 <th className="px-3 py-2 text-center">6 Months</th>
-                <th className="px-3 py-2 text-center">12 Months</th>
               </tr>
             </thead>
             <tbody>
               {pagedRows.map(({ c, exposure }) => {
                 const d6 = c.score6m - c.scoreCurrent;
-                const d12 = c.score12m - c.scoreCurrent;
                 return (
                   <tr
                     key={c.id}
@@ -266,7 +264,6 @@ function ProductCustomersDialog({
                     <td className="px-3 py-2.5 text-right tabular-nums">{fmtUSD(exposure)}</td>
                     <td className="px-3 py-2.5 text-center"><ScoreBadge score={c.scoreCurrent} size="sm" /></td>
                     <td className="px-3 py-2.5 text-center"><ScoreBadge score={c.score6m} size="sm" delta={d6} /></td>
-                    <td className="px-3 py-2.5 text-center"><ScoreBadge score={c.score12m} size="sm" delta={d12} /></td>
                   </tr>
                 );
               })}
