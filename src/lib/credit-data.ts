@@ -311,7 +311,7 @@ export function portfolioStats(customers: Customer[], scoreField: "scoreCurrent"
 }
 
 export interface ProductStat {
-  product: LoanProduct | "Credit Cards";
+  product: LoanProduct;
   loanBook: number;
   outstanding: number;
   atRiskExposure: number;
