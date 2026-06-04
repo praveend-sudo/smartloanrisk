@@ -98,10 +98,10 @@ export function ProductRiskChart() {
             <button
               key={p}
               onClick={() => toggle(p)}
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition",
-                on ? "bg-secondary" : "opacity-50 hover:opacity-100",
-              )}
+              className={
+                "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition " +
+                (on ? "bg-secondary" : "opacity-50 hover:opacity-100")
+              }
               style={on ? { borderColor: PRODUCT_COLORS[p], color: PRODUCT_COLORS[p] } : undefined}
             >
               <span
