@@ -190,7 +190,7 @@ function ProductCustomersDialog({
   onClose,
   onSelectCustomer,
 }: {
-  product: LoanProduct | "Credit Cards" | null;
+  product: LoanProduct | null;
   onClose: () => void;
   onSelectCustomer: (c: Customer) => void;
 }) {
@@ -199,14 +199,11 @@ function ProductCustomersDialog({
 
   const rows = useMemo(() => {
     if (!product) return [];
-    return CUSTOMERS.filter((c) =>
-      product === "Credit Cards" ? c.cards.length > 0 : c.loans.some((l) => l.product === product),
-    )
+    return CUSTOMERS.filter((c) => c.loans.some((l) => l.product === product))
       .map((c) => {
-        const exposure =
-          product === "Credit Cards"
-            ? c.cards.reduce((s, cc) => s + cc.balance, 0)
-            : c.loans.filter((l) => l.product === product).reduce((s, l) => s + l.outstanding, 0);
+        const exposure = c.loans
+          .filter((l) => l.product === product)
+          .reduce((s, l) => s + l.outstanding, 0);
         return { c, exposure };
       })
       .sort((a, b) => a.c.scoreCurrent - b.c.scoreCurrent);
