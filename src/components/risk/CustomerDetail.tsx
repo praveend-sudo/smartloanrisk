@@ -130,62 +130,6 @@ export function CustomerDetail({ customer, onClose }: { customer: Customer; onCl
           </div>
         </div>
 
-        {/* Cards */}
-        <div className="px-6 pb-10">
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Credit Cards ({customer.cards.length})
-          </h3>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {customer.cards.map((c) => {
-              const util = (c.balance / c.creditLimit) * 100;
-              return (
-                <div key={c.id} className="rounded-lg border bg-card p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-sm font-semibold">{c.network}</div>
-                      <div className="text-xs text-muted-foreground">•••• {c.last4} · {c.apr}% APR</div>
-                    </div>
-                    <span
-                      className={cn(
-                        "rounded px-2 py-0.5 text-xs font-medium",
-                        c.status === "Current" && "bg-[var(--band-loyal-soft)] text-[var(--band-loyal)]",
-                        c.status === "30 DPD" && "bg-[var(--band-watch-soft)] text-[var(--band-watch)]",
-                        c.status === "60 DPD" && "bg-[var(--band-watch-soft)] text-[var(--band-watch)]",
-                        c.status === "90+ DPD" && "bg-[var(--band-risk-soft)] text-[var(--band-risk)]",
-                      )}
-                    >
-                      {c.status}
-                    </span>
-                  </div>
-                  <div className="mt-3 grid grid-cols-3 gap-3">
-                    <Stat label="Credit Limit" value={fmtUSDFull(c.creditLimit)} />
-                    <Stat label="Balance" value={fmtUSDFull(c.balance)} />
-                    <Stat label="Min Payment" value={fmtUSDFull(c.minPayment)} />
-                  </div>
-                  <div className="mt-3">
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span>Utilization</span>
-                      <span className="tabular-nums">{util.toFixed(0)}%</span>
-                    </div>
-                    <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-secondary">
-                      <div
-                        className="h-full rounded-full"
-                        style={{
-                          width: `${Math.min(100, util)}%`,
-                          backgroundColor:
-                            util < 30 ? "var(--band-loyal)"
-                            : util < 60 ? "var(--band-stable)"
-                            : util < 85 ? "var(--band-watch)"
-                            : "var(--band-risk)",
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
       </div>
     </div>
   );
