@@ -79,12 +79,7 @@ export function getBand(score: number): BandMeta {
 export type LoanProduct =
   | "Mortgage"
   | "Auto Loan"
-  | "Personal Loan"
-  | "Home Equity LOC"
-  | "Student Loan"
-  | "SBA Business Loan"
-  | "Agricultural Loan"
-  | "Trade Finance";
+  | "Personal Loan";
 
 export interface CreditCard {
   id: string;
