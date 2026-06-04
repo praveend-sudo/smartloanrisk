@@ -208,7 +208,7 @@ export function Watchlist({
             })}
             {pagedRows.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-5 py-10 text-center text-sm text-muted-foreground">
+                <td colSpan={8} className="px-5 py-10 text-center text-sm text-muted-foreground">
                   No customers match the current filter.
                 </td>
               </tr>
