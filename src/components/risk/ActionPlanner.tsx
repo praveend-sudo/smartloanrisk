@@ -23,10 +23,7 @@ const ACTIONS: ActionOption[] = BANDS.flatMap((b) =>
 );
 
 function exposureOf(c: Customer) {
-  return (
-    c.loans.reduce((s, l) => s + l.outstanding, 0) +
-    c.cards.reduce((s, cc) => s + cc.balance, 0)
-  );
+  return c.loans.reduce((s, l) => s + l.outstanding, 0);
 }
 
 function csvEscape(v: string | number) {
