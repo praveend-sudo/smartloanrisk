@@ -262,34 +262,7 @@ function makeCustomer(seed: number): Customer {
     });
   }
 
-  const numCards = 1 + Math.floor(rand() * 4);
   const cards: CreditCard[] = [];
-  for (let i = 0; i < numCards; i++) {
-    const limitVol = rand() < 0.15 ? 3 + rand() * 3 : 0.6 + rand() * 1.2;
-    const limit = Math.round((3000 + rand() * 55000) * limitVol / 500) * 500;
-    const utilBase =
-      band === "loyal" ? rand() * 0.35
-      : band === "stable" ? 0.1 + rand() * 0.6
-      : band === "watch" ? 0.35 + rand() * 0.6
-      : 0.55 + rand() * 0.5;
-    const utilization = Math.max(0, Math.min(1.1, utilBase + (rand() - 0.5) * 0.3));
-    const balance = Math.round(limit * utilization);
-    cards.push({
-      id: `CC-${seed}-${i}`,
-      network: pick(["Visa Signature", "Mastercard World", "Amex Platinum", "Visa Platinum"] as const, rand),
-      last4: String(1000 + Math.floor(rand() * 9000)),
-      creditLimit: limit,
-      balance,
-      minPayment: Math.max(35, Math.round(balance * 0.03)),
-      apr: Math.round((14 + rand() * 18) * 100) / 100,
-      status:
-        band === "risk" && rand() > 0.35 ? "90+ DPD"
-        : band === "risk" && rand() > 0.55 ? "60 DPD"
-        : band === "watch" && rand() > 0.5 ? "30 DPD"
-        : band === "stable" && rand() > 0.92 ? "30 DPD"
-        : "Current",
-    });
-  }
 
   const incomeVol = rand() < 0.1 ? 2 + rand() * 4 : 0.5 + rand() * 1.3;
   return {
