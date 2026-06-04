@@ -7,15 +7,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 import {
-  Building2,
   Car,
   Wallet,
   Home,
-  GraduationCap,
-  Briefcase,
-  Sprout,
-  Ship,
-  CreditCard,
   ChevronLeft,
   ChevronRight,
   type LucideIcon,
@@ -25,12 +19,6 @@ const ICONS: Record<string, LucideIcon> = {
   Mortgage: Home,
   "Auto Loan": Car,
   "Personal Loan": Wallet,
-  "Home Equity LOC": Building2,
-  "Student Loan": GraduationCap,
-  "SBA Business Loan": Briefcase,
-  "Agricultural Loan": Sprout,
-  "Trade Finance": Ship,
-  "Credit Cards": CreditCard,
 };
 
 const PERIOD_FIELD = {
