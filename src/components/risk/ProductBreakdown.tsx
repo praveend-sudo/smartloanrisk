@@ -36,7 +36,7 @@ export function ProductBreakdown({
   onSelectCustomer?: (c: Customer) => void;
 }) {
   const stats = useMemo(() => productStats(CUSTOMERS, PERIOD_FIELD[period]), [period]);
-  const [openProduct, setOpenProduct] = useState<LoanProduct | "Credit Cards" | null>(null);
+  const [openProduct, setOpenProduct] = useState<LoanProduct | null>(null);
 
 
   const totals = useMemo(
