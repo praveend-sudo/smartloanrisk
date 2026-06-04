@@ -48,9 +48,9 @@ export function CustomerDetail({ customer, onClose }: { customer: Customer; onCl
               <Row label="Email" value={customer.email} />
               <Row label="Phone" value={customer.phone} />
               <Row label="Annual Income" value={fmtUSDFull(customer.annualIncome)} />
+              <Row label="Loan Book" value={fmtUSDFull(totalLoanBook)} />
               <Row label="Loan Outstanding" value={fmtUSDFull(totalLoanOutstanding)} />
-              <Row label="Card Limit" value={fmtUSDFull(totalCardLimit)} />
-              <Row label="Card Balance" value={fmtUSDFull(totalCardBalance)} />
+              <Row label="Monthly Installments" value={`${fmtUSDFull(totalInstallment)}/mo`} />
             </dl>
           </div>
           <div
