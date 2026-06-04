@@ -16,11 +16,6 @@ const PRODUCTS: LoanProduct[] = [
   "Mortgage",
   "Auto Loan",
   "Personal Loan",
-  "Home Equity LOC",
-  "Student Loan",
-  "SBA Business Loan",
-  "Agricultural Loan",
-  "Trade Finance",
 ];
 
 // Distinct hues for product lines (independent of risk-band colors)
@@ -28,16 +23,11 @@ const PRODUCT_COLORS: Record<LoanProduct, string> = {
   "Mortgage": "#2563eb",
   "Auto Loan": "#16a34a",
   "Personal Loan": "#f59e0b",
-  "Home Equity LOC": "#8b5cf6",
-  "Student Loan": "#06b6d4",
-  "SBA Business Loan": "#ef4444",
-  "Agricultural Loan": "#84cc16",
-  "Trade Finance": "#ec4899",
 };
 
 export function ProductRiskChart() {
   const [selected, setSelected] = useState<Set<LoanProduct>>(
-    new Set<LoanProduct>(["Mortgage", "Auto Loan", "Personal Loan", "SBA Business Loan"]),
+    new Set<LoanProduct>(["Mortgage", "Auto Loan", "Personal Loan"]),
   );
 
   // Aggregate avg weighted score per product per time bucket
