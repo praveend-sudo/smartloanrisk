@@ -42,7 +42,8 @@ export function Watchlist({
       const matchingLoans = product === "All" ? c.loans : c.loans.filter((l) => l.product === product);
       const principal = matchingLoans.reduce((s, l) => s + l.principal, 0);
       const installment = matchingLoans.reduce((s, l) => s + l.installment, 0);
-      return { c, principal, installment };
+      const products = Array.from(new Set(matchingLoans.map((l) => l.product)));
+      return { c, principal, installment, products };
     });
 
     const { col, dir } = sort;
