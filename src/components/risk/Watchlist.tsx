@@ -152,6 +152,7 @@ export function Watchlist({
           <thead>
             <tr className="border-b bg-muted/40">
               <SortHeader col="name" className="px-5">Customer</SortHeader>
+              <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Loan Product</th>
               <SortHeader col="scoreCurrent">Current</SortHeader>
               <SortHeader col="score6m">6-Month Forecast</SortHeader>
               <SortHeader col="principal" align="right">Loan Amount</SortHeader>
