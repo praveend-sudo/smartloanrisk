@@ -18,7 +18,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Probabilistic 6 & 12-month credit risk forecasting for retail loan and credit-card portfolios.",
+          "Probabilistic 6-month credit risk forecasting for retail loan and credit-card portfolios.",
       },
     ],
   }),
