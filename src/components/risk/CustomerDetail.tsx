@@ -5,8 +5,8 @@ import { cn } from "@/lib/utils";
 export function CustomerDetail({ customer, onClose }: { customer: Customer; onClose: () => void }) {
   const band = getBand(customer.scoreCurrent);
   const totalLoanOutstanding = customer.loans.reduce((s, l) => s + l.outstanding, 0);
-  const totalCardLimit = customer.cards.reduce((s, c) => s + c.creditLimit, 0);
-  const totalCardBalance = customer.cards.reduce((s, c) => s + c.balance, 0);
+  const totalLoanBook = customer.loans.reduce((s, l) => s + l.principal, 0);
+  const totalInstallment = customer.loans.reduce((s, l) => s + l.installment, 0);
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-sm">
