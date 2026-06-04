@@ -46,7 +46,6 @@ function downloadCSV(filename: string, rows: Customer[], action: ActionOption) {
     "6-Month Score",
     "Total Exposure (USD)",
     "Loans",
-    "Credit Cards",
     "Recommended Action",
   ];
   const lines = rows.map((c) => {
