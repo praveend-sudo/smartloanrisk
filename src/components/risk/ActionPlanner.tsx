@@ -64,7 +64,6 @@ function downloadCSV(filename: string, rows: Customer[], action: ActionOption) {
       c.score6m,
       Math.round(exposureOf(c)),
       c.loans.map((l) => l.product).join(" | "),
-      c.cards.map((cc) => `${cc.network} ****${cc.last4}`).join(" | "),
       action.action,
     ].map(csvEscape).join(",");
   });
