@@ -28,8 +28,7 @@ export const Route = createFileRoute("/")({
 function Dashboard() {
   const statsCurrent = useMemo(() => portfolioStats(CUSTOMERS, "scoreCurrent"), []);
   const stats6m = useMemo(() => portfolioStats(CUSTOMERS, "score6m"), []);
-  const stats12m = useMemo(() => portfolioStats(CUSTOMERS, "score12m"), []);
-  const statsMap = { current: statsCurrent, "6m": stats6m, "12m": stats12m };
+  const statsMap = { current: statsCurrent, "6m": stats6m };
 
   const [period, setPeriod] = useState<Period>("current");
   const [selected, setSelected] = useState<Customer | null>(null);
