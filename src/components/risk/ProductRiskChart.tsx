@@ -11,7 +11,6 @@ import {
   ReferenceArea,
 } from "recharts";
 import { CUSTOMERS, BANDS, type LoanProduct } from "@/lib/credit-data";
-import { cn } from "@/lib/utils";
 
 const PRODUCTS: LoanProduct[] = [
   "Mortgage",
@@ -36,10 +35,7 @@ const PRODUCT_COLORS: Record<LoanProduct, string> = {
   "Trade Finance": "#ec4899",
 };
 
-type Horizon = "6m" | "12m";
-
 export function ProductRiskChart() {
-  const [horizon, setHorizon] = useState<Horizon>("12m");
   const [selected, setSelected] = useState<Set<LoanProduct>>(
     new Set<LoanProduct>(["Mortgage", "Auto Loan", "Personal Loan", "SBA Business Loan"]),
   );
@@ -47,8 +43,8 @@ export function ProductRiskChart() {
   // Aggregate avg weighted score per product per time bucket
   const data = useMemo(() => {
     // For each product, weight by exposure (loan principal)
-    const buckets: Record<LoanProduct, { now: { s: number; w: number }; m6: { s: number; w: number }; m12: { s: number; w: number } }> = {} as never;
-    for (const p of PRODUCTS) buckets[p] = { now: { s: 0, w: 0 }, m6: { s: 0, w: 0 }, m12: { s: 0, w: 0 } };
+    const buckets: Record<LoanProduct, { now: { s: number; w: number }; m6: { s: number; w: number } }> = {} as never;
+    for (const p of PRODUCTS) buckets[p] = { now: { s: 0, w: 0 }, m6: { s: 0, w: 0 } };
 
     for (const c of CUSTOMERS) {
       for (const l of c.loans) {
@@ -57,8 +53,6 @@ export function ProductRiskChart() {
         buckets[l.product].now.w += w;
         buckets[l.product].m6.s += c.score6m * w;
         buckets[l.product].m6.w += w;
-        buckets[l.product].m12.s += c.score12m * w;
-        buckets[l.product].m12.w += w;
       }
     }
 
@@ -66,16 +60,14 @@ export function ProductRiskChart() {
       { label: "Now" },
       { label: "6 Months" },
     ];
-    if (horizon === "12m") points.push({ label: "12 Months" });
 
     for (const p of PRODUCTS) {
       const b = buckets[p];
       points[0][p] = b.now.w ? Math.round(b.now.s / b.now.w) : 0;
       points[1][p] = b.m6.w ? Math.round(b.m6.s / b.m6.w) : 0;
-      if (horizon === "12m") points[2][p] = b.m12.w ? Math.round(b.m12.s / b.m12.w) : 0;
     }
     return points;
-  }, [horizon]);
+  }, []);
 
   const toggle = (p: LoanProduct) => {
     setSelected((prev) => {
@@ -94,25 +86,8 @@ export function ProductRiskChart() {
             Loan Product Risk Movement
           </div>
           <div className="mt-0.5 text-sm text-muted-foreground">
-            Exposure-weighted average Smart Credit Score per product over time
+            Exposure-weighted average Smart Credit Score per product over 6-month horizon
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">Horizon</span>
-          {(["6m", "12m"] as Horizon[]).map((h) => (
-            <button
-              key={h}
-              onClick={() => setHorizon(h)}
-              className={cn(
-                "rounded-md px-3 py-1.5 text-xs font-medium transition",
-                horizon === h
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-secondary text-secondary-foreground hover:bg-secondary/70",
-              )}
-            >
-              {h === "6m" ? "6 Months" : "12 Months"}
-            </button>
-          ))}
         </div>
       </div>
 

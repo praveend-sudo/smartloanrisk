@@ -28,7 +28,7 @@ export function Watchlist({
   const [product, setProduct] = useState<LoanProduct | "All">("All");
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<{ col: string; dir: "asc" | "desc" }>({
-    col: "score12m",
+    col: "score6m",
     dir: "asc",
   });
   const [page, setPage] = useState(1);
@@ -57,7 +57,6 @@ export function Watchlist({
         case "name": return a.c.name.localeCompare(b.c.name) * m;
         case "scoreCurrent": return (a.c.scoreCurrent - b.c.scoreCurrent) * m;
         case "score6m": return (a.c.score6m - b.c.score6m) * m;
-        case "score12m": return (a.c.score12m - b.c.score12m) * m;
         case "principal": return (a.principal - b.principal) * m;
         case "installment": return (a.installment - b.installment) * m;
         default: return 0;
@@ -124,7 +123,7 @@ export function Watchlist({
         <div>
           <h2 className="text-base font-semibold">Customer Watchlist</h2>
           <p className="text-xs text-muted-foreground">
-            Probabilistic 6 & 12-month risk forecast · click a row for full customer file
+            Probabilistic 6-month risk forecast · click a row for full customer file
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -159,7 +158,6 @@ export function Watchlist({
               <SortHeader col="name" className="px-5">Customer</SortHeader>
               <SortHeader col="scoreCurrent">Current</SortHeader>
               <SortHeader col="score6m">6-Month Forecast</SortHeader>
-              <SortHeader col="score12m">12-Month Forecast</SortHeader>
               <SortHeader col="principal" align="right">Loan Amount</SortHeader>
               <SortHeader col="installment" align="right">Installment</SortHeader>
               <th className="px-3 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">AI Explain</th>
@@ -188,9 +186,6 @@ export function Watchlist({
                   <td className="px-3 py-3">
                     <ScoreBadge score={c.score6m} delta={c.score6m - c.scoreCurrent} />
                   </td>
-                  <td className="px-3 py-3">
-                    <ScoreBadge score={c.score12m} delta={c.score12m - c.scoreCurrent} />
-                  </td>
                   <td className="px-3 py-3 text-right tabular-nums">{fmtUSDFull(principal)}</td>
                   <td className="px-3 py-3 text-right tabular-nums">{fmtUSDFull(installment)}/mo</td>
                   <td className="px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
@@ -204,7 +199,7 @@ export function Watchlist({
             })}
             {pagedRows.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-5 py-10 text-center text-sm text-muted-foreground">
+                <td colSpan={7} className="px-5 py-10 text-center text-sm text-muted-foreground">
                   No customers match the current filter.
                 </td>
               </tr>

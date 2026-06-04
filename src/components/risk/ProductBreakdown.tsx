@@ -36,7 +36,6 @@ const ICONS: Record<string, LucideIcon> = {
 const PERIOD_FIELD = {
   current: "scoreCurrent",
   "6m": "score6m",
-  "12m": "score12m",
 } as const;
 
 export function ProductBreakdown({
@@ -84,7 +83,7 @@ export function ProductBreakdown({
             <Legend label="At-Risk" tone="risk" />
             <Legend label="Due Payments" tone="watch" />
             <div className="ml-2 flex items-center gap-1.5">
-              {(["current", "6m", "12m"] as const).map((id) => (
+              {(["current", "6m"] as const).map((id) => (
                 <button
                   key={id}
                   onClick={() => onPeriodChange(id)}
@@ -95,7 +94,7 @@ export function ProductBreakdown({
                       : "bg-secondary text-secondary-foreground hover:bg-secondary/70",
                   )}
                 >
-                  {id === "current" ? "Now" : id === "6m" ? "6M" : "12M"}
+                  {id === "current" ? "Now" : "6M"}
                 </button>
               ))}
             </div>
