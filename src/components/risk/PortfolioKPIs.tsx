@@ -20,10 +20,13 @@ export function PortfolioKPIs(p: Props) {
   const riskPct = p.totalOutstanding > 0 ? (p.atRiskExposure / p.totalOutstanding) * 100 : 0;
   const utilPct = p.totalLoanAmount > 0 ? (p.totalOutstanding / p.totalLoanAmount) * 100 : 0;
 
+  const totalCustomers = Object.values(p.bandCounts).reduce((a, b) => a + b, 0);
+  const avgLoan = totalCustomers > 0 ? p.totalLoanAmount / totalCustomers : 0;
+
   const kpis = [
     { label: "Total Loan Book", value: fmtUSD(p.totalLoanAmount), sub: `${p.customerCount} customers` },
     { label: "Outstanding Balance", value: fmtUSD(p.totalOutstanding), sub: `Utilization ${utilPct.toFixed(1)}%` },
-    { label: "Active Loans", value: String(Object.values(p.bandCounts).reduce((a, b) => a + b, 0)), sub: "Across 3 products" },
+    { label: "Avg Loan / Customer", value: fmtUSD(avgLoan), sub: "Across 3 products" },
     {
       label: "At-Risk Exposure",
       value: fmtUSD(p.atRiskExposure),
