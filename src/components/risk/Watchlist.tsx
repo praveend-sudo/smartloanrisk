@@ -42,7 +42,8 @@ export function Watchlist({
       const matchingLoans = product === "All" ? c.loans : c.loans.filter((l) => l.product === product);
       const principal = matchingLoans.reduce((s, l) => s + l.principal, 0);
       const installment = matchingLoans.reduce((s, l) => s + l.installment, 0);
-      return { c, principal, installment };
+      const products = Array.from(new Set(matchingLoans.map((l) => l.product)));
+      return { c, principal, installment, products };
     });
 
     const { col, dir } = sort;
@@ -151,6 +152,7 @@ export function Watchlist({
           <thead>
             <tr className="border-b bg-muted/40">
               <SortHeader col="name" className="px-5">Customer</SortHeader>
+              <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Loan Product</th>
               <SortHeader col="scoreCurrent">Current</SortHeader>
               <SortHeader col="score6m">6-Month Forecast</SortHeader>
               <SortHeader col="principal" align="right">Loan Amount</SortHeader>
@@ -160,7 +162,7 @@ export function Watchlist({
             </tr>
           </thead>
           <tbody>
-            {pagedRows.map(({ c, principal, installment }) => {
+            {pagedRows.map(({ c, principal, installment, products }) => {
               const selected = c.id === selectedId;
               return (
                 <tr
@@ -175,6 +177,18 @@ export function Watchlist({
                     <div className="font-medium">{c.name}</div>
                     <div className="text-xs text-muted-foreground">
                       {c.id} · {c.city}, {c.state}
+                    </div>
+                  </td>
+                  <td className="px-3 py-3">
+                    <div className="flex flex-wrap gap-1">
+                      {products.map((p) => (
+                        <span
+                          key={p}
+                          className="inline-flex items-center rounded-md bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground"
+                        >
+                          {p}
+                        </span>
+                      ))}
                     </div>
                   </td>
                   <td className="px-3 py-3"><ScoreBadge score={c.scoreCurrent} /></td>
@@ -194,7 +208,7 @@ export function Watchlist({
             })}
             {pagedRows.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-5 py-10 text-center text-sm text-muted-foreground">
+                <td colSpan={8} className="px-5 py-10 text-center text-sm text-muted-foreground">
                   No customers match the current filter.
                 </td>
               </tr>

@@ -23,10 +23,7 @@ const ACTIONS: ActionOption[] = BANDS.flatMap((b) =>
 );
 
 function exposureOf(c: Customer) {
-  return (
-    c.loans.reduce((s, l) => s + l.outstanding, 0) +
-    c.cards.reduce((s, cc) => s + cc.balance, 0)
-  );
+  return c.loans.reduce((s, l) => s + l.outstanding, 0);
 }
 
 function csvEscape(v: string | number) {
@@ -49,7 +46,6 @@ function downloadCSV(filename: string, rows: Customer[], action: ActionOption) {
     "6-Month Score",
     "Total Exposure (USD)",
     "Loans",
-    "Credit Cards",
     "Recommended Action",
   ];
   const lines = rows.map((c) => {
@@ -68,7 +64,6 @@ function downloadCSV(filename: string, rows: Customer[], action: ActionOption) {
       c.score6m,
       Math.round(exposureOf(c)),
       c.loans.map((l) => l.product).join(" | "),
-      c.cards.map((cc) => `${cc.network} ****${cc.last4}`).join(" | "),
       action.action,
     ].map(csvEscape).join(",");
   });

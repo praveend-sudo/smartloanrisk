@@ -262,34 +262,7 @@ function makeCustomer(seed: number): Customer {
     });
   }
 
-  const numCards = 1 + Math.floor(rand() * 4);
   const cards: CreditCard[] = [];
-  for (let i = 0; i < numCards; i++) {
-    const limitVol = rand() < 0.15 ? 3 + rand() * 3 : 0.6 + rand() * 1.2;
-    const limit = Math.round((3000 + rand() * 55000) * limitVol / 500) * 500;
-    const utilBase =
-      band === "loyal" ? rand() * 0.35
-      : band === "stable" ? 0.1 + rand() * 0.6
-      : band === "watch" ? 0.35 + rand() * 0.6
-      : 0.55 + rand() * 0.5;
-    const utilization = Math.max(0, Math.min(1.1, utilBase + (rand() - 0.5) * 0.3));
-    const balance = Math.round(limit * utilization);
-    cards.push({
-      id: `CC-${seed}-${i}`,
-      network: pick(["Visa Signature", "Mastercard World", "Amex Platinum", "Visa Platinum"] as const, rand),
-      last4: String(1000 + Math.floor(rand() * 9000)),
-      creditLimit: limit,
-      balance,
-      minPayment: Math.max(35, Math.round(balance * 0.03)),
-      apr: Math.round((14 + rand() * 18) * 100) / 100,
-      status:
-        band === "risk" && rand() > 0.35 ? "90+ DPD"
-        : band === "risk" && rand() > 0.55 ? "60 DPD"
-        : band === "watch" && rand() > 0.5 ? "30 DPD"
-        : band === "stable" && rand() > 0.92 ? "30 DPD"
-        : "Current",
-    });
-  }
 
   const incomeVol = rand() < 0.1 ? 2 + rand() * 4 : 0.5 + rand() * 1.3;
   return {
@@ -316,8 +289,6 @@ export const CUSTOMERS: Customer[] = Array.from({ length: 48 }, (_, i) =>
 export function portfolioStats(customers: Customer[], scoreField: "scoreCurrent" | "score6m" | "score12m" = "scoreCurrent") {
   let totalLoanAmount = 0;
   let totalOutstanding = 0;
-  let totalCardLimit = 0;
-  let totalCardBalance = 0;
   const bandCounts: Record<ScoreBand, number> = { loyal: 0, stable: 0, watch: 0, risk: 0 };
   const bandExposure: Record<ScoreBand, number> = { loyal: 0, stable: 0, watch: 0, risk: 0 };
 
@@ -329,21 +300,10 @@ export function portfolioStats(customers: Customer[], scoreField: "scoreCurrent"
       totalOutstanding += l.outstanding;
       bandExposure[b] += l.outstanding;
     }
-    for (const cc of c.cards) {
-      totalCardLimit += cc.creditLimit;
-      totalCardBalance += cc.balance;
-      // Include cards in book + outstanding so KPI totals match the
-      // Product-Wise Portfolio Snapshot totals row.
-      totalLoanAmount += cc.creditLimit;
-      totalOutstanding += cc.balance;
-      bandExposure[b] += cc.balance;
-    }
   }
   return {
     totalLoanAmount,
     totalOutstanding,
-    totalCardLimit,
-    totalCardBalance,
     bandCounts,
     bandExposure,
     atRiskExposure: bandExposure.watch + bandExposure.risk,
@@ -351,7 +311,7 @@ export function portfolioStats(customers: Customer[], scoreField: "scoreCurrent"
 }
 
 export interface ProductStat {
-  product: LoanProduct | "Credit Cards";
+  product: LoanProduct;
   loanBook: number;
   outstanding: number;
   atRiskExposure: number;
@@ -388,14 +348,6 @@ export function productStats(
       }
     }
 
-    for (const cc of c.cards) {
-      const s = ensure("Credit Cards");
-      s.loanBook += cc.creditLimit;
-      s.outstanding += cc.balance;
-      s.loanCount += 1;
-      if (atRisk) s.atRiskExposure += cc.balance;
-      if (cc.status !== "Current") s.duePayments += cc.minPayment;
-    }
   }
   return Array.from(map.values()).sort((a, b) => b.outstanding - a.outstanding);
 }

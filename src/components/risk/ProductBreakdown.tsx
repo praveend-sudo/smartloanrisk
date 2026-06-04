@@ -7,15 +7,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 import {
-  Building2,
   Car,
   Wallet,
   Home,
-  GraduationCap,
-  Briefcase,
-  Sprout,
-  Ship,
-  CreditCard,
   ChevronLeft,
   ChevronRight,
   type LucideIcon,
@@ -25,12 +19,6 @@ const ICONS: Record<string, LucideIcon> = {
   Mortgage: Home,
   "Auto Loan": Car,
   "Personal Loan": Wallet,
-  "Home Equity LOC": Building2,
-  "Student Loan": GraduationCap,
-  "SBA Business Loan": Briefcase,
-  "Agricultural Loan": Sprout,
-  "Trade Finance": Ship,
-  "Credit Cards": CreditCard,
 };
 
 const PERIOD_FIELD = {
@@ -48,7 +36,7 @@ export function ProductBreakdown({
   onSelectCustomer?: (c: Customer) => void;
 }) {
   const stats = useMemo(() => productStats(CUSTOMERS, PERIOD_FIELD[period]), [period]);
-  const [openProduct, setOpenProduct] = useState<LoanProduct | "Credit Cards" | null>(null);
+  const [openProduct, setOpenProduct] = useState<LoanProduct | null>(null);
 
 
   const totals = useMemo(
@@ -202,7 +190,7 @@ function ProductCustomersDialog({
   onClose,
   onSelectCustomer,
 }: {
-  product: LoanProduct | "Credit Cards" | null;
+  product: LoanProduct | null;
   onClose: () => void;
   onSelectCustomer: (c: Customer) => void;
 }) {
@@ -211,14 +199,11 @@ function ProductCustomersDialog({
 
   const rows = useMemo(() => {
     if (!product) return [];
-    return CUSTOMERS.filter((c) =>
-      product === "Credit Cards" ? c.cards.length > 0 : c.loans.some((l) => l.product === product),
-    )
+    return CUSTOMERS.filter((c) => c.loans.some((l) => l.product === product))
       .map((c) => {
-        const exposure =
-          product === "Credit Cards"
-            ? c.cards.reduce((s, cc) => s + cc.balance, 0)
-            : c.loans.filter((l) => l.product === product).reduce((s, l) => s + l.outstanding, 0);
+        const exposure = c.loans
+          .filter((l) => l.product === product)
+          .reduce((s, l) => s + l.outstanding, 0);
         return { c, exposure };
       })
       .sort((a, b) => a.c.scoreCurrent - b.c.scoreCurrent);
