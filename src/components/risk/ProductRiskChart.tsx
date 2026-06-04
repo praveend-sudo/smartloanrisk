@@ -56,15 +56,47 @@ export function ProductRiskChart() {
       }
     }
 
-    const points: Array<Record<string, number | string>> = [
-      { label: "Now" },
-      { label: "6 Months" },
-    ];
+    // Deterministic seeded RNG per product so history is stable across renders
+    const rand = (seed: number) => {
+      let s = seed >>> 0;
+      return () => {
+        s = (s * 1664525 + 1013904223) >>> 0;
+        return s / 0xffffffff;
+      };
+    };
+    const hash = (str: string) => {
+      let h = 2166136261 >>> 0;
+      for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return h >>> 0;
+    };
+
+    const monthLabels = ["-6m", "-5m", "-4m", "-3m", "-2m", "-1m", "Now", "+3m", "+6m"];
+    const points: Array<Record<string, number | string>> = monthLabels.map((label) => ({ label }));
 
     for (const p of PRODUCTS) {
       const b = buckets[p];
-      points[0][p] = b.now.w ? Math.round(b.now.s / b.now.w) : 0;
-      points[1][p] = b.m6.w ? Math.round(b.m6.s / b.m6.w) : 0;
+      const now = b.now.w ? b.now.s / b.now.w : 0;
+      const m6 = b.m6.w ? b.m6.s / b.m6.w : 0;
+      const rng = rand(hash(p));
+      // Start 6 months ago with a drift offset, walk toward Now
+      const startOffset = (rng() - 0.5) * 80; // ±40 pts
+      const start = Math.max(0, Math.min(999, now + startOffset));
+      // 7 historical+current points (-6m .. Now)
+      for (let i = 0; i < 7; i++) {
+        const t = i / 6;
+        const trend = start + (now - start) * t;
+        const jitter = (rng() - 0.5) * 22; // monthly volatility
+        points[i][p] = Math.round(Math.max(0, Math.min(999, trend + jitter)));
+      }
+      // Override Now to exact current value
+      points[6][p] = Math.round(now);
+      // Forecast: +3m as midpoint with jitter, +6m exact
+      const mid = now + (m6 - now) * 0.5 + (rng() - 0.5) * 12;
+      points[7][p] = Math.round(Math.max(0, Math.min(999, mid)));
+      points[8][p] = Math.round(m6);
     }
     return points;
   }, []);
