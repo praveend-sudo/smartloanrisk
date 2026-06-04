@@ -176,8 +176,7 @@ const OCCUPATIONS = [
   "Sales Executive", "Civil Engineer", "Restaurant Owner", "Pharmacist",
 ];
 const PRODUCTS: LoanProduct[] = [
-  "Mortgage", "Auto Loan", "Personal Loan", "Home Equity LOC", "Student Loan",
-  "SBA Business Loan", "Agricultural Loan", "Trade Finance",
+  "Mortgage", "Auto Loan", "Personal Loan",
 ];
 
 function pick<T>(arr: T[], r: () => number) {
