@@ -332,6 +332,10 @@ export function portfolioStats(customers: Customer[], scoreField: "scoreCurrent"
     for (const cc of c.cards) {
       totalCardLimit += cc.creditLimit;
       totalCardBalance += cc.balance;
+      // Include cards in book + outstanding so KPI totals match the
+      // Product-Wise Portfolio Snapshot totals row.
+      totalLoanAmount += cc.creditLimit;
+      totalOutstanding += cc.balance;
       bandExposure[b] += cc.balance;
     }
   }
