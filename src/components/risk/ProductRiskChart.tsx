@@ -118,7 +118,7 @@ export function ProductRiskChart() {
             Loan Product Risk Movement
           </div>
           <div className="mt-0.5 text-sm text-muted-foreground">
-            Exposure-weighted average Smart Credit Score per product over 6-month horizon
+            Exposure-weighted Smart Credit Score — 6 months of prior predictions, current, and 6-month forecast
           </div>
         </div>
       </div>
