@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Info } from "lucide-react";
 
-export type Period = "current" | "6m" | "12m";
+export type Period = "current" | "6m";
 
 interface Props {
   totalLoanAmount: number;
@@ -77,7 +77,6 @@ export function PortfolioKPIs(p: Props) {
             <div className="flex items-center gap-2">
               <Tab id="current" label="Now" />
               <Tab id="6m" label="6 Months" />
-              <Tab id="12m" label="12 Months" />
               <span className="ml-1 text-xs text-muted-foreground">{p.customerCount} customers</span>
             </div>
           </div>

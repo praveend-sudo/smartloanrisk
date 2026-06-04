@@ -34,10 +34,9 @@ export function CustomerDetail({ customer, onClose }: { customer: Customer; onCl
             </button>
           </div>
 
-          <div className="mt-5 grid grid-cols-3 gap-3">
+          <div className="mt-5 grid grid-cols-2 gap-3">
             <ScoreCard label="Current Score" score={customer.scoreCurrent} />
             <ScoreCard label="6-Month Forecast" score={customer.score6m} delta={customer.score6m - customer.scoreCurrent} />
-            <ScoreCard label="12-Month Forecast" score={customer.score12m} delta={customer.score12m - customer.scoreCurrent} />
           </div>
         </div>
 

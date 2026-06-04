@@ -47,7 +47,6 @@ function downloadCSV(filename: string, rows: Customer[], action: ActionOption) {
     "Risk Band",
     "Current Score",
     "6-Month Score",
-    "12-Month Score",
     "Total Exposure (USD)",
     "Loans",
     "Credit Cards",
@@ -67,7 +66,6 @@ function downloadCSV(filename: string, rows: Customer[], action: ActionOption) {
       band.label,
       c.scoreCurrent,
       c.score6m,
-      c.score12m,
       Math.round(exposureOf(c)),
       c.loans.map((l) => l.product).join(" | "),
       c.cards.map((cc) => `${cc.network} ****${cc.last4}`).join(" | "),
@@ -170,7 +168,6 @@ export function ActionPlanner({ onSelectCustomer }: { onSelectCustomer?: (c: Cus
               <th className="px-3 py-2 text-right">Income</th>
               <th className="px-3 py-2 text-center">Now</th>
               <th className="px-3 py-2 text-center">6M</th>
-              <th className="px-3 py-2 text-center">12M</th>
               <th className="px-3 py-2 text-right">Exposure</th>
             </tr>
           </thead>
@@ -196,7 +193,6 @@ export function ActionPlanner({ onSelectCustomer }: { onSelectCustomer?: (c: Cus
                 <td className="px-3 py-2.5 text-right tabular-nums text-xs">{fmtUSDFull(c.annualIncome)}</td>
                 <td className="px-3 py-2.5 text-center"><ScoreBadge score={c.scoreCurrent} size="sm" /></td>
                 <td className="px-3 py-2.5 text-center"><ScoreBadge score={c.score6m} size="sm" delta={c.score6m - c.scoreCurrent} /></td>
-                <td className="px-3 py-2.5 text-center"><ScoreBadge score={c.score12m} size="sm" delta={c.score12m - c.scoreCurrent} /></td>
                 <td className="px-3 py-2.5 text-right tabular-nums">{fmtUSDFull(exposureOf(c))}</td>
               </tr>
             ))}

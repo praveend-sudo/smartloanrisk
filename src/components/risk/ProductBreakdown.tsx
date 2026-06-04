@@ -36,7 +36,6 @@ const ICONS: Record<string, LucideIcon> = {
 const PERIOD_FIELD = {
   current: "scoreCurrent",
   "6m": "score6m",
-  "12m": "score12m",
 } as const;
 
 export function ProductBreakdown({
@@ -84,7 +83,7 @@ export function ProductBreakdown({
             <Legend label="At-Risk" tone="risk" />
             <Legend label="Due Payments" tone="watch" />
             <div className="ml-2 flex items-center gap-1.5">
-              {(["current", "6m", "12m"] as const).map((id) => (
+              {(["current", "6m"] as const).map((id) => (
                 <button
                   key={id}
                   onClick={() => onPeriodChange(id)}
@@ -95,7 +94,7 @@ export function ProductBreakdown({
                       : "bg-secondary text-secondary-foreground hover:bg-secondary/70",
                   )}
                 >
-                  {id === "current" ? "Now" : id === "6m" ? "6M" : "12M"}
+                  {id === "current" ? "Now" : "6M"}
                 </button>
               ))}
             </div>
@@ -247,13 +246,11 @@ function ProductCustomersDialog({
                 <th className="px-3 py-2 text-right">Exposure</th>
                 <th className="px-3 py-2 text-center">Now</th>
                 <th className="px-3 py-2 text-center">6 Months</th>
-                <th className="px-3 py-2 text-center">12 Months</th>
               </tr>
             </thead>
             <tbody>
               {pagedRows.map(({ c, exposure }) => {
                 const d6 = c.score6m - c.scoreCurrent;
-                const d12 = c.score12m - c.scoreCurrent;
                 return (
                   <tr
                     key={c.id}
@@ -267,7 +264,6 @@ function ProductCustomersDialog({
                     <td className="px-3 py-2.5 text-right tabular-nums">{fmtUSD(exposure)}</td>
                     <td className="px-3 py-2.5 text-center"><ScoreBadge score={c.scoreCurrent} size="sm" /></td>
                     <td className="px-3 py-2.5 text-center"><ScoreBadge score={c.score6m} size="sm" delta={d6} /></td>
-                    <td className="px-3 py-2.5 text-center"><ScoreBadge score={c.score12m} size="sm" delta={d12} /></td>
                   </tr>
                 );
               })}
