@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { BarChart3, Layers, TrendingUp, ClipboardCheck, ShieldAlert } from "lucide-react";
 import logosAsset from "@/assets/logos.png.asset.json";
