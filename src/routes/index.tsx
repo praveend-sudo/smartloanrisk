@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { BarChart3, Layers, TrendingUp, ClipboardCheck, ShieldAlert } from "lucide-react";
 import logosAsset from "@/assets/logos.png.asset.json";
@@ -51,6 +51,17 @@ function Dashboard() {
             </div>
           </div>
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <nav className="flex items-center gap-1">
+              <Link to="/" className="rounded-md bg-primary px-3 py-1.5 font-medium text-primary-foreground">
+                Retail
+              </Link>
+              <Link
+                to="/corporate"
+                className="rounded-md px-3 py-1.5 font-medium text-muted-foreground transition hover:bg-muted"
+              >
+                Corporate
+              </Link>
+            </nav>
             <span className="hidden md:inline">Portfolio refreshed · {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--band-loyal-soft)] px-3 py-1 text-[var(--band-loyal)]">
               <span className="h-1.5 w-1.5 rounded-full bg-[var(--band-loyal)]" />
