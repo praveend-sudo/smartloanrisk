@@ -12,7 +12,10 @@ import {
   ArrowDownRight,
   X,
   Download,
+  BarChart3,
 } from "lucide-react";
+import { CorpRiskChart } from "@/components/risk/CorpRiskChart";
+import { CorpWatchlist } from "@/components/risk/CorpWatchlist";
 import logosAsset from "@/assets/logos.png.asset.json";
 import {
   CORPORATES,
@@ -97,19 +100,27 @@ function CorporateDashboard() {
         </div>
 
         <CollapsibleSection
-          title="Portfolio KPIs"
+          title="Portfolio KPIs & Risk Distribution"
           description="Sanctioned, outstanding, at-risk exposure and watchlist concentration"
-          icon={Building2}
+          icon={BarChart3}
         >
           <KPIGrid summary={summary} />
         </CollapsibleSection>
 
         <CollapsibleSection
-          title="Product-Wise Snapshot"
+          title="Product-Wise Portfolio Snapshot"
           description="Term Loan · Working Capital · Syndicated Loan"
           icon={Layers}
         >
           <ProductSnapshot summary={summary} />
+        </CollapsibleSection>
+
+        <CollapsibleSection
+          title="Corporate Product Risk Movement"
+          description="Exposure-weighted PD trajectory by product"
+          icon={TrendingUp}
+        >
+          <CorpRiskChart />
         </CollapsibleSection>
 
         <CollapsibleSection
@@ -138,10 +149,18 @@ function CorporateDashboard() {
 
         <CollapsibleSection
           title="Action Planner & Renewal Pipeline"
-          description="Sortable, exportable RM action list"
+          description="Filter borrowers by recommended action and export RM list"
           icon={ClipboardCheck}
         >
           <ActionPlanner onSelectCustomer={setSelected} />
+        </CollapsibleSection>
+
+        <CollapsibleSection
+          title="Corporate Borrower Watchlist"
+          description="Sortable, filterable list of all corporate borrowers"
+          icon={ShieldAlert}
+        >
+          <CorpWatchlist onSelect={setSelected} selectedId={selected?.id} />
         </CollapsibleSection>
       </main>
 
