@@ -63,6 +63,10 @@ export function CorpWatchlist({
           return a.c.name.localeCompare(b.c.name) * dir;
         case "rating":
           return (RATING_ORDER.indexOf(a.c.rating) - RATING_ORDER.indexOf(b.c.rating)) * dir;
+        case "score":
+          return (corpScore(a.c) - corpScore(b.c)) * dir;
+        case "score6m":
+          return (corpScore6m(a.c) - corpScore6m(b.c)) * dir;
         case "pd":
           return (a.c.pd - b.c.pd) * dir;
         case "dscr":
