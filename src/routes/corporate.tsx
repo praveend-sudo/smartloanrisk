@@ -46,9 +46,9 @@ export const Route = createFileRoute("/corporate")({
 });
 
 const ACTION_COLORS: Record<ActionType, string> = {
-  "Covenant Review": "bg-[var(--band-risk-soft)] text-[var(--band-risk)]",
-  "Rating Watch": "bg-[var(--band-watch-soft)] text-[var(--band-watch)]",
+  "Recovery Action": "bg-[var(--band-risk-soft)] text-[var(--band-risk)]",
   "Exposure Reduction": "bg-[var(--band-watch-soft)] text-[var(--band-watch)]",
+  "Score Watch": "bg-[var(--band-watch-soft)] text-[var(--band-watch)]",
   "Renewal Discussion": "bg-[var(--band-stable-soft)] text-[var(--band-stable)]",
   "Routine Monitoring": "bg-[var(--band-loyal-soft)] text-[var(--band-loyal)]",
 };
@@ -393,9 +393,9 @@ function ProductSnapshot({
 function ActionPlanner({ onSelectCustomer }: { onSelectCustomer: (c: Corporate) => void }) {
   const actions: Array<ActionType | "All"> = [
     "All",
-    "Covenant Review",
-    "Rating Watch",
+    "Recovery Action",
     "Exposure Reduction",
+    "Score Watch",
     "Renewal Discussion",
     "Routine Monitoring",
   ];
