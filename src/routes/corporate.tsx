@@ -13,16 +13,18 @@ import {
 } from "lucide-react";
 import { CorpRiskChart } from "@/components/risk/CorpRiskChart";
 import { CorpWatchlist } from "@/components/risk/CorpWatchlist";
+import { ScoreBadge } from "@/components/risk/ScoreBadge";
 import logosAsset from "@/assets/logos.png.asset.json";
 import {
   CORPORATES,
+  corpScore,
+  corpScore6m,
   portfolioSummary,
   facilityTotals,
   ratingToBand,
   bandMeta,
   fmtUSD,
   fmtUSDFull,
-  RATING_ORDER,
   type Corporate,
   type CorpProduct,
   type CorpPeriod,
@@ -544,6 +546,9 @@ function CorpDetail({ corp, onClose }: { corp: Corporate; onClose: () => void })
   const t = facilityTotals(corp);
   const band = ratingToBand(corp.rating);
   const pdDelta = corp.pd6m - corp.pd;
+  const sNow = corpScore(corp);
+  const s6 = corpScore6m(corp);
+  const scoreDelta = s6 - sNow;
   return (
     <div className="fixed inset-0 z-30 flex justify-end bg-black/40" onClick={onClose}>
       <div
@@ -554,7 +559,7 @@ function CorpDetail({ corp, onClose }: { corp: Corporate; onClose: () => void })
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <h2 className="truncate text-lg font-semibold">{corp.name}</h2>
-              <RatingBadge rating={corp.rating} />
+              <ScoreBadge score={sNow} />
             </div>
             <div className="mt-0.5 text-xs text-muted-foreground">
               {corp.id} · {corp.sector} · {corp.hq} · RM {corp.rm}
@@ -576,16 +581,10 @@ function CorpDetail({ corp, onClose }: { corp: Corporate; onClose: () => void })
               tone={pdDelta > 0 ? "risk" : pdDelta < 0 ? "loyal" : undefined}
             />
             <Stat
-              label="Forecast Rating"
-              value={corp.rating6m}
-              sub={`from ${corp.rating}`}
-              tone={
-                RATING_ORDER.indexOf(corp.rating6m) > RATING_ORDER.indexOf(corp.rating)
-                  ? "risk"
-                  : RATING_ORDER.indexOf(corp.rating6m) < RATING_ORDER.indexOf(corp.rating)
-                    ? "loyal"
-                    : undefined
-              }
+              label="Smart Score (6M)"
+              value={`${s6}`}
+              sub={`from ${sNow} (${scoreDelta >= 0 ? "+" : ""}${scoreDelta})`}
+              tone={scoreDelta < -20 ? "risk" : scoreDelta > 20 ? "loyal" : undefined}
             />
           </div>
 
@@ -606,6 +605,7 @@ function CorpDetail({ corp, onClose }: { corp: Corporate; onClose: () => void })
             </div>
             <p className="mt-2 text-sm text-muted-foreground">{corp.notes}</p>
           </div>
+
 
           <div>
             <h3 className="mb-2 text-sm font-semibold">Financial Covenants</h3>
