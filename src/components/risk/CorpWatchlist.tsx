@@ -6,7 +6,6 @@ import {
   corpScore6m,
   facilityTotals,
   ratingToBand,
-  bandMeta,
   fmtUSD,
   RATING_ORDER,
   type Corporate,
