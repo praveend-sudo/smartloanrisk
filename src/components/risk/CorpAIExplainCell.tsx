@@ -19,26 +19,24 @@ function buildExplanation(c: Corporate): string {
   const band = bandMeta(ratingToBand(c.rating));
   const t = facilityTotals(c);
   const products = Array.from(new Set(c.facilities.map((f) => f.product)));
-  const breached = c.covenants.filter((cv) => cv.status === "breach");
-  const warned = c.covenants.filter((cv) => cv.status === "warning");
   const util = t.sanctioned > 0 ? Math.round((t.outstanding / t.sanctioned) * 100) : 0;
   const dir =
     delta > 15 ? "improvement" : delta < -15 ? "deterioration" : "stable performance";
 
-  const narrative = `**${c.name}** (${c.sector}, ${c.hq}) carries rating **${c.rating}** in the **${band.label}** tier, with a smart credit score of **${score}/999**. The 6-month forecast migrates to **${c.rating6m}** (score ${score6}, ${delta >= 0 ? "+" : ""}${delta} pts) — ${dir}. Total exposure across ${products.length} facility line${products.length > 1 ? "s" : ""} is **${fmtUSD(t.outstanding)} outstanding** of ${fmtUSD(t.sanctioned)} sanctioned (${util}% utilization). PD trajectory: ${c.pd}% → ${c.pd6m}%.`;
+  const narrative = `**${c.name}** (${c.sector}, ${c.hq}) holds a smart credit score of **${score}/999** in the **${band.label}** tier. The 6-month forecast moves to **${score6}** (${delta >= 0 ? "+" : ""}${delta} pts) — ${dir}. Total exposure across ${products.length} facility line${products.length > 1 ? "s" : ""} is **${fmtUSD(t.outstanding)} outstanding** of ${fmtUSD(t.sanctioned)} sanctioned (${util}% utilization). PD trajectory: ${c.pd}% → ${c.pd6m}%.`;
 
   const driverPool: Array<{ w: number; line: string }> = [
     {
-      w: breached.length > 0 ? 100 : warned.length > 0 ? 65 : 25,
-      line: `**Covenant compliance** — ${breached.length} breach${breached.length === 1 ? "" : "es"} and ${warned.length} warning${warned.length === 1 ? "" : "s"} across DSCR ${c.dscr.toFixed(2)}x, leverage ${c.leverage.toFixed(2)}x, current ratio ${c.currentRatio.toFixed(2)}x ${breached.length > 0 ? "— immediate review required" : warned.length > 0 ? "— monitor closely" : "— full compliance"}.`,
+      w: score < 400 ? 100 : score < 600 ? 75 : 30,
+      line: `**Smart credit score** of **${score}/999** places the borrower in the ${band.label} tier ${score < 400 ? "— immediate recovery action required" : score < 600 ? "— enhanced monitoring warranted" : "— within acceptable risk appetite"}.`,
     },
     {
       w: c.dscr < 1.25 ? 90 : c.dscr < 1.5 ? 55 : 30,
-      line: `**Debt servicing capacity** — DSCR of **${c.dscr.toFixed(2)}x** ${c.dscr >= 1.5 ? "demonstrates comfortable coverage of fixed charges" : c.dscr >= 1.25 ? "meets minimum policy threshold with limited buffer" : "is below the 1.25x policy floor and signals stress"}.`,
+      line: `**Debt servicing capacity** — DSCR of **${c.dscr.toFixed(2)}x** ${c.dscr >= 1.5 ? "comfortably covers fixed charges" : c.dscr >= 1.25 ? "meets minimum threshold with limited buffer" : "is below the 1.25x policy floor and signals stress"}.`,
     },
     {
       w: c.leverage > 4 ? 85 : c.leverage > 3 ? 50 : 25,
-      line: `**Balance-sheet leverage** — Debt/EBITDA at **${c.leverage.toFixed(2)}x** ${c.leverage <= 3.5 ? "is within the prudent range" : c.leverage <= 4 ? "is approaching the covenant ceiling" : "breaches the 4.00x cap and constrains incremental capacity"}.`,
+      line: `**Balance-sheet leverage** — Debt/EBITDA at **${c.leverage.toFixed(2)}x** ${c.leverage <= 3.5 ? "is within the prudent range" : c.leverage <= 4 ? "is approaching the prudent ceiling" : "is elevated and constrains incremental capacity"}.`,
     },
     {
       w: Math.abs(c.pd6m - c.pd) > 1 ? 75 : 35,
@@ -77,7 +75,7 @@ export function CorpAIExplainCell({ corp }: { corp: Corporate }) {
           "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition hover:bg-accent/10",
           `border-[var(--band-${b}-soft)] text-[var(--band-${b})]`,
         )}
-        title="AI explanation of this rating"
+        title="AI explanation of this score"
       >
         <Sparkles className="h-3 w-3" />
         Explain
@@ -102,11 +100,11 @@ export function CorpAIExplainCell({ corp }: { corp: Corporate }) {
                   style={{ color: `var(--band-${b})` }}
                 >
                   <Sparkles className="h-3.5 w-3.5" />
-                  AI Rating Explanation
+                  AI Score Explanation
                 </div>
                 <div className="mt-1 text-sm font-semibold text-foreground">{corp.name}</div>
                 <div className="text-xs text-muted-foreground">
-                  {bandMeta(b).label} · Rating {corp.rating} → {corp.rating6m} · Score {score} → {score6} (6mo)
+                  {bandMeta(b).label} · Smart Score {score} → {score6} (6mo)
                 </div>
               </div>
               <button

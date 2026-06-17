@@ -110,9 +110,6 @@ export function CorpRiskChart() {
             Exposure-weighted Probability of Default (%) — historical, current, and 6-month forecast
           </div>
         </div>
-        <div className="text-[11px] text-muted-foreground">
-          Rating scale: {RATING_ORDER.join(" · ")}
-        </div>
       </div>
 
       <div className="mb-3 flex flex-wrap gap-1.5">

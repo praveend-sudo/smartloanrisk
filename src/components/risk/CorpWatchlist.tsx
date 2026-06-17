@@ -6,7 +6,6 @@ import {
   corpScore6m,
   facilityTotals,
   ratingToBand,
-  bandMeta,
   fmtUSD,
   RATING_ORDER,
   type Corporate,
@@ -133,7 +132,6 @@ export function CorpWatchlist({
           <thead>
             <tr className="border-b bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
               <Th label="Borrower" onClick={() => toggleSort("name")} />
-              <Th label="Rating" onClick={() => toggleSort("rating")} />
               <Th label="Score (Now)" onClick={() => toggleSort("score")} />
               <Th label="Score (6M)" onClick={() => toggleSort("score6m")} />
               <th className="px-3 py-3">Products</th>
@@ -148,14 +146,12 @@ export function CorpWatchlist({
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={11} className="px-5 py-10 text-center text-sm text-muted-foreground">
+                <td colSpan={10} className="px-5 py-10 text-center text-sm text-muted-foreground">
                   No borrowers match the current filters.
                 </td>
               </tr>
             )}
             {rows.map(({ c, outstanding, products }) => {
-              const b = ratingToBand(c.rating);
-              const meta = bandMeta(b);
               const pdUp = c.pd6m > c.pd;
               return (
                 <tr
@@ -170,47 +166,6 @@ export function CorpWatchlist({
                     <div className="font-medium">{c.name}</div>
                     <div className="text-xs text-muted-foreground">
                       {c.id} · {c.sector} · RM {c.rm}
-                    </div>
-                  </td>
-                  <td className="px-3 py-3">
-                    <div className="flex items-center gap-1.5">
-                      <span
-                        className={cn(
-                          "inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold ring-1",
-                          `bg-[var(--band-${b}-soft)]`,
-                          `text-[var(--band-${b})]`,
-                          `ring-[var(--band-${b})]/30`,
-                        )}
-                        title={`Now: ${meta.label}`}
-                      >
-                        {c.rating}
-                      </span>
-                      {(() => {
-                        const b6 = ratingToBand(c.rating6m);
-                        const meta6 = bandMeta(b6);
-                        const nowIdx = RATING_ORDER.indexOf(c.rating);
-                        const futIdx = RATING_ORDER.indexOf(c.rating6m);
-                        const arrow = futIdx > nowIdx ? "▼" : futIdx < nowIdx ? "▲" : "→";
-                        return (
-                          <>
-                            <span className="text-[10px] text-muted-foreground">{arrow}</span>
-                            <span
-                              className={cn(
-                                "inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-semibold ring-1",
-                                `bg-[var(--band-${b6}-soft)]`,
-                                `text-[var(--band-${b6})]`,
-                                `ring-[var(--band-${b6})]/30`,
-                              )}
-                              title={`6M: ${meta6.label}`}
-                            >
-                              {c.rating6m}
-                            </span>
-                          </>
-                        );
-                      })()}
-                    </div>
-                    <div className="mt-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
-                      Now → 6M
                     </div>
                   </td>
 

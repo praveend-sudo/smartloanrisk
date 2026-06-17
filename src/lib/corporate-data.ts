@@ -33,10 +33,10 @@ export interface CovenantStatus {
 }
 
 export type ActionType =
-  | "Covenant Review"
-  | "Renewal Discussion"
+  | "Recovery Action"
   | "Exposure Reduction"
-  | "Rating Watch"
+  | "Score Watch"
+  | "Renewal Discussion"
   | "Routine Monitoring";
 
 export interface Corporate {
@@ -265,21 +265,31 @@ function makeCorporate(i: number, entry: [string, string, string]): Corporate {
   const ratingPrev = nextRating(rating, rand() < 0.25 ? -1 : 0);
 
   const covenants = makeCovenants(dscr, leverage, currentRatio);
-  const breached = covenants.some((c) => c.status === "breach");
-  const warning = covenants.some((c) => c.status === "warning");
 
-  let action: ActionType = "Routine Monitoring";
-  if (breached) action = "Covenant Review";
-  else if (drift > 0) action = "Rating Watch";
-  else if (warning && ratingIdx >= 4) action = "Exposure Reduction";
-  else {
-    // upcoming maturity
-    const soonest = facilities.reduce(
-      (min, f) => Math.min(min, +new Date(f.maturityDate) - +REF_DATE),
-      Infinity,
-    );
-    if (soonest < 1000 * 60 * 60 * 24 * 270) action = "Renewal Discussion";
-  }
+  // ---- Smart credit score (inline; mirrors corpScore() below) ----
+  const RATING_BASE: Record<CorpRating, number> = {
+    AAA: 950, AA: 880, A: 800, BBB: 720, BB: 560, B: 440, CCC: 320,
+  };
+  const dscrAdj = Math.round((dscr - 1.4) * 18);
+  const levAdj = Math.round((4 - leverage) * 9);
+  const pdShift = Math.round((pdForRating(rating) - pdForRating(rating6m)) * 2);
+  const scoreNow = Math.max(0, Math.min(999, RATING_BASE[rating] + dscrAdj + levAdj));
+  const score6mVal = Math.max(0, Math.min(999, RATING_BASE[rating6m] + dscrAdj + levAdj + pdShift));
+  const scoreDelta = score6mVal - scoreNow;
+
+  // Action depends on smart credit score (now + 6m trajectory) and maturity proximity
+  const soonestMs = facilities.reduce(
+    (min, f) => Math.min(min, +new Date(f.maturityDate) - +REF_DATE),
+    Infinity,
+  );
+  const maturingSoon = soonestMs < 1000 * 60 * 60 * 24 * 270;
+
+  let action: ActionType;
+  if (scoreNow < 400) action = "Recovery Action";
+  else if (scoreNow < 600) action = "Exposure Reduction";
+  else if (scoreDelta <= -40 || score6mVal < 600) action = "Score Watch";
+  else if (maturingSoon) action = "Renewal Discussion";
+  else action = "Routine Monitoring";
 
 
   const notesPool = [

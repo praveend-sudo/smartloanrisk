@@ -13,16 +13,18 @@ import {
 } from "lucide-react";
 import { CorpRiskChart } from "@/components/risk/CorpRiskChart";
 import { CorpWatchlist } from "@/components/risk/CorpWatchlist";
+import { ScoreBadge } from "@/components/risk/ScoreBadge";
 import logosAsset from "@/assets/logos.png.asset.json";
 import {
   CORPORATES,
+  corpScore,
+  corpScore6m,
   portfolioSummary,
   facilityTotals,
   ratingToBand,
   bandMeta,
   fmtUSD,
   fmtUSDFull,
-  RATING_ORDER,
   type Corporate,
   type CorpProduct,
   type CorpPeriod,
@@ -46,9 +48,9 @@ export const Route = createFileRoute("/corporate")({
 });
 
 const ACTION_COLORS: Record<ActionType, string> = {
-  "Covenant Review": "bg-[var(--band-risk-soft)] text-[var(--band-risk)]",
-  "Rating Watch": "bg-[var(--band-watch-soft)] text-[var(--band-watch)]",
+  "Recovery Action": "bg-[var(--band-risk-soft)] text-[var(--band-risk)]",
   "Exposure Reduction": "bg-[var(--band-watch-soft)] text-[var(--band-watch)]",
+  "Score Watch": "bg-[var(--band-watch-soft)] text-[var(--band-watch)]",
   "Renewal Discussion": "bg-[var(--band-stable-soft)] text-[var(--band-stable)]",
   "Routine Monitoring": "bg-[var(--band-loyal-soft)] text-[var(--band-loyal)]",
 };
@@ -70,7 +72,7 @@ function CorporateDashboard() {
             <div className="hidden md:block">
               <div className="text-sm font-semibold leading-tight">Corporate Credit Console</div>
               <div className="text-xs text-muted-foreground">
-                Wholesale lending · Ratings AAA–CCC · USD
+                Wholesale lending · Smart Score 0–999 · USD
               </div>
             </div>
           </div>
@@ -102,7 +104,7 @@ function CorporateDashboard() {
 
         <CollapsibleSection
           title="Portfolio KPIs & Risk Distribution"
-          description="Headline exposure metrics and rating-band segmentation"
+          description="Headline exposure metrics and risk-band segmentation"
           icon={BarChart3}
         >
           <KPIGrid summary={summary} period={period} onPeriodChange={setPeriod} />
@@ -231,10 +233,10 @@ function KPIGrid({
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Portfolio Distribution by Rating Band
+              Portfolio Distribution by Risk Band
             </div>
             <div className="mt-0.5 text-sm text-muted-foreground">
-              Ratings AAA → CCC · {period === "6m" ? "6-month forecast" : "current"} segmentation
+              Smart Score 0 → 999 · {period === "6m" ? "6-month forecast" : "current"} segmentation
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -317,7 +319,7 @@ function ProductSnapshot({
     <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
       <div className="flex items-center justify-between gap-3 border-b px-5 py-3">
         <div className="text-xs text-muted-foreground">
-          At-risk column reflects {period === "6m" ? "6-month forecasted" : "current"} rating band
+          At-risk column reflects {period === "6m" ? "6-month forecasted" : "current"} smart-score band
         </div>
         <div className="flex items-center gap-2">
           <Tab id="current" label="Now" />
@@ -393,9 +395,9 @@ function ProductSnapshot({
 function ActionPlanner({ onSelectCustomer }: { onSelectCustomer: (c: Corporate) => void }) {
   const actions: Array<ActionType | "All"> = [
     "All",
-    "Covenant Review",
-    "Rating Watch",
+    "Recovery Action",
     "Exposure Reduction",
+    "Score Watch",
     "Renewal Discussion",
     "Routine Monitoring",
   ];
@@ -416,7 +418,8 @@ function ActionPlanner({ onSelectCustomer }: { onSelectCustomer: (c: Corporate) 
       "ID",
       "Borrower",
       "Sector",
-      "Rating",
+      "Score",
+      "Score (6M)",
       "Action",
       "RM",
       "Sanctioned (USD)",
@@ -430,7 +433,8 @@ function ActionPlanner({ onSelectCustomer }: { onSelectCustomer: (c: Corporate) 
           r.c.id,
           `"${r.c.name}"`,
           r.c.sector,
-          r.c.rating,
+          corpScore(r.c),
+          corpScore6m(r.c),
           r.c.action,
           r.c.rm,
           r.sanctioned,
@@ -480,7 +484,7 @@ function ActionPlanner({ onSelectCustomer }: { onSelectCustomer: (c: Corporate) 
           <thead>
             <tr className="border-b bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
               <th className="px-5 py-3">Borrower</th>
-              <th className="px-3 py-3">Rating</th>
+              <th className="px-3 py-3">Score (Now → 6M)</th>
               <th className="px-3 py-3">Recommended Action</th>
               <th className="px-3 py-3">RM</th>
               <th className="px-3 py-3 text-right">Outstanding</th>
@@ -489,7 +493,10 @@ function ActionPlanner({ onSelectCustomer }: { onSelectCustomer: (c: Corporate) 
             </tr>
           </thead>
           <tbody>
-            {rows.map(({ c, outstanding, nextMaturity }) => (
+            {rows.map(({ c, outstanding, nextMaturity }) => {
+              const sNow = corpScore(c);
+              const s6 = corpScore6m(c);
+              return (
               <tr
                 key={c.id}
                 onClick={() => onSelectCustomer(c)}
@@ -502,7 +509,11 @@ function ActionPlanner({ onSelectCustomer }: { onSelectCustomer: (c: Corporate) 
                   </div>
                 </td>
                 <td className="px-3 py-3">
-                  <RatingBadge rating={c.rating} />
+                  <div className="flex items-center gap-2">
+                    <ScoreBadge score={sNow} />
+                    <span className="text-xs text-muted-foreground">→</span>
+                    <ScoreBadge score={s6} delta={s6 - sNow} />
+                  </div>
                 </td>
                 <td className="px-3 py-3">
                   <span
@@ -521,7 +532,8 @@ function ActionPlanner({ onSelectCustomer }: { onSelectCustomer: (c: Corporate) 
                   <span className="text-xs font-medium text-accent">Open →</span>
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -534,6 +546,9 @@ function CorpDetail({ corp, onClose }: { corp: Corporate; onClose: () => void })
   const t = facilityTotals(corp);
   const band = ratingToBand(corp.rating);
   const pdDelta = corp.pd6m - corp.pd;
+  const sNow = corpScore(corp);
+  const s6 = corpScore6m(corp);
+  const scoreDelta = s6 - sNow;
   return (
     <div className="fixed inset-0 z-30 flex justify-end bg-black/40" onClick={onClose}>
       <div
@@ -544,7 +559,7 @@ function CorpDetail({ corp, onClose }: { corp: Corporate; onClose: () => void })
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <h2 className="truncate text-lg font-semibold">{corp.name}</h2>
-              <RatingBadge rating={corp.rating} />
+              <ScoreBadge score={sNow} />
             </div>
             <div className="mt-0.5 text-xs text-muted-foreground">
               {corp.id} · {corp.sector} · {corp.hq} · RM {corp.rm}
@@ -566,16 +581,10 @@ function CorpDetail({ corp, onClose }: { corp: Corporate; onClose: () => void })
               tone={pdDelta > 0 ? "risk" : pdDelta < 0 ? "loyal" : undefined}
             />
             <Stat
-              label="Forecast Rating"
-              value={corp.rating6m}
-              sub={`from ${corp.rating}`}
-              tone={
-                RATING_ORDER.indexOf(corp.rating6m) > RATING_ORDER.indexOf(corp.rating)
-                  ? "risk"
-                  : RATING_ORDER.indexOf(corp.rating6m) < RATING_ORDER.indexOf(corp.rating)
-                    ? "loyal"
-                    : undefined
-              }
+              label="Smart Score (6M)"
+              value={`${s6}`}
+              sub={`from ${sNow} (${scoreDelta >= 0 ? "+" : ""}${scoreDelta})`}
+              tone={scoreDelta < -20 ? "risk" : scoreDelta > 20 ? "loyal" : undefined}
             />
           </div>
 
@@ -595,36 +604,6 @@ function CorpDetail({ corp, onClose }: { corp: Corporate; onClose: () => void })
               <span className="text-xs text-muted-foreground">{bandMeta(band).label}</span>
             </div>
             <p className="mt-2 text-sm text-muted-foreground">{corp.notes}</p>
-          </div>
-
-          <div>
-            <h3 className="mb-2 text-sm font-semibold">Financial Covenants</h3>
-            <div className="overflow-hidden rounded-lg border">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b bg-muted/40 text-left text-xs text-muted-foreground">
-                    <th className="px-3 py-2">Covenant</th>
-                    <th className="px-3 py-2 text-right">Threshold</th>
-                    <th className="px-3 py-2 text-right">Actual</th>
-                    <th className="px-3 py-2">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {corp.covenants.map((c) => (
-                    <tr key={c.name} className="border-b last:border-0">
-                      <td className="px-3 py-2 font-medium">{c.name}</td>
-                      <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">
-                        {c.threshold}
-                      </td>
-                      <td className="px-3 py-2 text-right tabular-nums font-semibold">{c.actual}</td>
-                      <td className="px-3 py-2">
-                        <StatusPill status={c.status} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
           </div>
 
           <div>
@@ -662,43 +641,6 @@ function CorpDetail({ corp, onClose }: { corp: Corporate; onClose: () => void })
 }
 
 /* ============= Atoms ============= */
-function RatingBadge({ rating }: { rating: Corporate["rating"] }) {
-  const band = ratingToBand(rating);
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold ring-1",
-        `bg-[var(--band-${band}-soft)]`,
-        `text-[var(--band-${band})]`,
-        `ring-[var(--band-${band})]/30`,
-      )}
-    >
-      {rating}
-    </span>
-  );
-}
-
-function StatusPill({ status }: { status: "ok" | "warning" | "breach" }) {
-  const map = {
-    ok: { label: "Within", token: "loyal" },
-    warning: { label: "Tight", token: "watch" },
-    breach: { label: "Breach", token: "risk" },
-  } as const;
-  const m = map[status];
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium",
-        `bg-[var(--band-${m.token}-soft)]`,
-        `text-[var(--band-${m.token})]`,
-      )}
-    >
-      {status === "breach" && <AlertTriangle className="h-3 w-3" />}
-      {status === "ok" && <TrendingUp className="h-3 w-3" />}
-      {m.label}
-    </span>
-  );
-}
 
 function Stat({
   label,
