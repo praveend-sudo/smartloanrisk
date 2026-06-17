@@ -72,7 +72,7 @@ function CorporateDashboard() {
             <div className="hidden md:block">
               <div className="text-sm font-semibold leading-tight">Corporate Credit Console</div>
               <div className="text-xs text-muted-foreground">
-                Wholesale lending · Ratings AAA–CCC · USD
+                Wholesale lending · Smart Score 0–999 · USD
               </div>
             </div>
           </div>
@@ -104,7 +104,7 @@ function CorporateDashboard() {
 
         <CollapsibleSection
           title="Portfolio KPIs & Risk Distribution"
-          description="Headline exposure metrics and rating-band segmentation"
+          description="Headline exposure metrics and risk-band segmentation"
           icon={BarChart3}
         >
           <KPIGrid summary={summary} period={period} onPeriodChange={setPeriod} />
@@ -233,10 +233,10 @@ function KPIGrid({
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Portfolio Distribution by Rating Band
+              Portfolio Distribution by Risk Band
             </div>
             <div className="mt-0.5 text-sm text-muted-foreground">
-              Ratings AAA → CCC · {period === "6m" ? "6-month forecast" : "current"} segmentation
+              Smart Score 0 → 999 · {period === "6m" ? "6-month forecast" : "current"} segmentation
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -319,7 +319,7 @@ function ProductSnapshot({
     <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
       <div className="flex items-center justify-between gap-3 border-b px-5 py-3">
         <div className="text-xs text-muted-foreground">
-          At-risk column reflects {period === "6m" ? "6-month forecasted" : "current"} rating band
+          At-risk column reflects {period === "6m" ? "6-month forecasted" : "current"} smart-score band
         </div>
         <div className="flex items-center gap-2">
           <Tab id="current" label="Now" />
