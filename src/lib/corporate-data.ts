@@ -427,5 +427,5 @@ export function corpScore(c: Corporate): number {
 
 export function corpScore6m(c: Corporate): number {
   const pdShift = Math.round((c.pd - c.pd6m) * 2);
-  return scoreFromInputs(c.rating6m, c.dscr, c.leverage, pdShift);
+  return Math.max(1, scoreFromInputs(c.rating6m, c.dscr, c.leverage, pdShift));
 }
