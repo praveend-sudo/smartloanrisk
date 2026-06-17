@@ -273,8 +273,8 @@ function makeCorporate(i: number, entry: [string, string, string]): Corporate {
   const dscrAdj = Math.round((dscr - 1.4) * 18);
   const levAdj = Math.round((4 - leverage) * 9);
   const pdShift = Math.round((pdForRating(rating) - pdForRating(rating6m)) * 2);
-  const scoreNow = Math.max(0, Math.min(999, RATING_BASE[rating] + dscrAdj + levAdj));
-  const score6mVal = Math.max(0, Math.min(999, RATING_BASE[rating6m] + dscrAdj + levAdj + pdShift));
+  const scoreNow = Math.max(280, Math.min(999, RATING_BASE[rating] + dscrAdj + levAdj));
+  const score6mVal = Math.max(280, Math.min(999, RATING_BASE[rating6m] + dscrAdj + levAdj + pdShift));
   const scoreDelta = score6mVal - scoreNow;
 
   // Action depends on smart credit score (now + 6m trajectory) and maturity proximity
@@ -411,11 +411,14 @@ const RATING_BASE_SCORE: Record<CorpRating, number> = {
   AAA: 950, AA: 880, A: 800, BBB: 720, BB: 560, B: 440, CCC: 320,
 };
 
+// Floor prevents implausibly low scores; even distressed CCC names stay above 280.
+const SCORE_FLOOR = 280;
+
 function scoreFromInputs(rating: CorpRating, dscr: number, leverage: number, pdShift = 0): number {
   const base = RATING_BASE_SCORE[rating];
   const dscrAdj = Math.round((dscr - 1.4) * 18);
   const levAdj = Math.round((4 - leverage) * 9);
-  return Math.max(0, Math.min(999, base + dscrAdj + levAdj + pdShift));
+  return Math.max(SCORE_FLOOR, Math.min(999, base + dscrAdj + levAdj + pdShift));
 }
 
 export function corpScore(c: Corporate): number {
