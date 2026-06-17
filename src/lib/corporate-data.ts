@@ -291,33 +291,53 @@ export function facilityTotals(c: Corporate) {
   );
 }
 
-export function portfolioSummary() {
+export type CorpPeriod = "current" | "6m";
+
+export function portfolioSummary(period: CorpPeriod = "current") {
   let sanctioned = 0;
   let outstanding = 0;
   let atRisk = 0;
   const bySector: Record<string, number> = {};
-  const byProduct: Record<CorpProduct, { sanctioned: number; outstanding: number; count: number }> = {
-    "Term Loan": { sanctioned: 0, outstanding: 0, count: 0 },
-    "Working Capital": { sanctioned: 0, outstanding: 0, count: 0 },
-    "Syndicated Loan": { sanctioned: 0, outstanding: 0, count: 0 },
+  const byProduct: Record<
+    CorpProduct,
+    { sanctioned: number; outstanding: number; count: number; atRisk: number }
+  > = {
+    "Term Loan": { sanctioned: 0, outstanding: 0, count: 0, atRisk: 0 },
+    "Working Capital": { sanctioned: 0, outstanding: 0, count: 0, atRisk: 0 },
+    "Syndicated Loan": { sanctioned: 0, outstanding: 0, count: 0, atRisk: 0 },
   };
   const byBand: Record<RiskBand, number> = { loyal: 0, stable: 0, watch: 0, risk: 0 };
+  const countByBand: Record<RiskBand, number> = { loyal: 0, stable: 0, watch: 0, risk: 0 };
 
   for (const c of CORPORATES) {
     const t = facilityTotals(c);
     sanctioned += t.sanctioned;
     outstanding += t.outstanding;
-    const band = ratingToBand(c.rating);
+    const rating = period === "6m" ? c.rating6m : c.rating;
+    const band = ratingToBand(rating);
     byBand[band] += t.outstanding;
-    if (band === "watch" || band === "risk") atRisk += t.outstanding;
+    countByBand[band] += 1;
+    const isAtRisk = band === "watch" || band === "risk";
+    if (isAtRisk) atRisk += t.outstanding;
     bySector[c.sector] = (bySector[c.sector] ?? 0) + t.outstanding;
     for (const f of c.facilities) {
       byProduct[f.product].sanctioned += f.sanctioned;
       byProduct[f.product].outstanding += f.outstanding;
       byProduct[f.product].count += 1;
+      if (isAtRisk) byProduct[f.product].atRisk += f.outstanding;
     }
   }
-  return { sanctioned, outstanding, atRisk, bySector, byProduct, byBand, count: CORPORATES.length };
+  return {
+    sanctioned,
+    outstanding,
+    atRisk,
+    bySector,
+    byProduct,
+    byBand,
+    countByBand,
+    count: CORPORATES.length,
+    period,
+  };
 }
 
 export function fmtUSD(n: number) {
