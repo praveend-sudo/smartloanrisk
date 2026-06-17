@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { ArrowUpDown, Search } from "lucide-react";
 import {
   CORPORATES,
+  corpScore,
+  corpScore6m,
   facilityTotals,
   ratingToBand,
   bandMeta,
@@ -11,6 +13,8 @@ import {
   type CorpProduct,
   type RiskBand,
 } from "@/lib/corporate-data";
+import { ScoreBadge } from "./ScoreBadge";
+import { CorpAIExplainCell } from "./CorpAIExplainCell";
 import { cn } from "@/lib/utils";
 
 type SortKey = "name" | "rating" | "pd" | "outstanding" | "dscr" | "leverage" | "action";
