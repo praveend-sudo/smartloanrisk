@@ -416,7 +416,8 @@ function ActionPlanner({ onSelectCustomer }: { onSelectCustomer: (c: Corporate) 
       "ID",
       "Borrower",
       "Sector",
-      "Rating",
+      "Score",
+      "Score (6M)",
       "Action",
       "RM",
       "Sanctioned (USD)",
@@ -430,7 +431,8 @@ function ActionPlanner({ onSelectCustomer }: { onSelectCustomer: (c: Corporate) 
           r.c.id,
           `"${r.c.name}"`,
           r.c.sector,
-          r.c.rating,
+          corpScore(r.c),
+          corpScore6m(r.c),
           r.c.action,
           r.c.rm,
           r.sanctioned,
@@ -480,7 +482,7 @@ function ActionPlanner({ onSelectCustomer }: { onSelectCustomer: (c: Corporate) 
           <thead>
             <tr className="border-b bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
               <th className="px-5 py-3">Borrower</th>
-              <th className="px-3 py-3">Rating</th>
+              <th className="px-3 py-3">Score (Now → 6M)</th>
               <th className="px-3 py-3">Recommended Action</th>
               <th className="px-3 py-3">RM</th>
               <th className="px-3 py-3 text-right">Outstanding</th>
@@ -489,7 +491,10 @@ function ActionPlanner({ onSelectCustomer }: { onSelectCustomer: (c: Corporate) 
             </tr>
           </thead>
           <tbody>
-            {rows.map(({ c, outstanding, nextMaturity }) => (
+            {rows.map(({ c, outstanding, nextMaturity }) => {
+              const sNow = corpScore(c);
+              const s6 = corpScore6m(c);
+              return (
               <tr
                 key={c.id}
                 onClick={() => onSelectCustomer(c)}
@@ -502,7 +507,11 @@ function ActionPlanner({ onSelectCustomer }: { onSelectCustomer: (c: Corporate) 
                   </div>
                 </td>
                 <td className="px-3 py-3">
-                  <RatingBadge rating={c.rating} />
+                  <div className="flex items-center gap-2">
+                    <ScoreBadge score={sNow} />
+                    <span className="text-xs text-muted-foreground">→</span>
+                    <ScoreBadge score={s6} delta={s6 - sNow} />
+                  </div>
                 </td>
                 <td className="px-3 py-3">
                   <span
@@ -521,7 +530,8 @@ function ActionPlanner({ onSelectCustomer }: { onSelectCustomer: (c: Corporate) 
                   <span className="text-xs font-medium text-accent">Open →</span>
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>
