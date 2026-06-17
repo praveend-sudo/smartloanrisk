@@ -274,7 +274,7 @@ function makeCorporate(i: number, entry: [string, string, string]): Corporate {
   const levAdj = Math.round((4 - leverage) * 9);
   const pdShift = Math.round((pdForRating(rating) - pdForRating(rating6m)) * 2);
   const scoreNow = Math.max(280, Math.min(999, RATING_BASE[rating] + dscrAdj + levAdj));
-  const score6mVal = Math.max(280, Math.min(999, RATING_BASE[rating6m] + dscrAdj + levAdj + pdShift));
+  const score6mVal = Math.max(1, Math.max(280, Math.min(999, RATING_BASE[rating6m] + dscrAdj + levAdj + pdShift)));
   const scoreDelta = score6mVal - scoreNow;
 
   // Action depends on smart credit score (now + 6m trajectory) and maturity proximity
