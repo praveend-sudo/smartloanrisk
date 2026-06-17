@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { ArrowUpDown, Search } from "lucide-react";
 import {
   CORPORATES,
+  corpScore,
+  corpScore6m,
   facilityTotals,
   ratingToBand,
   bandMeta,
@@ -11,9 +13,11 @@ import {
   type CorpProduct,
   type RiskBand,
 } from "@/lib/corporate-data";
+import { ScoreBadge } from "./ScoreBadge";
+import { CorpAIExplainCell } from "./CorpAIExplainCell";
 import { cn } from "@/lib/utils";
 
-type SortKey = "name" | "rating" | "pd" | "outstanding" | "dscr" | "leverage" | "action";
+type SortKey = "name" | "rating" | "score" | "score6m" | "pd" | "outstanding" | "dscr" | "leverage" | "action";
 
 const BAND_FILTERS: Array<{ id: RiskBand | "all"; label: string }> = [
   { id: "all", label: "All" },
@@ -59,6 +63,10 @@ export function CorpWatchlist({
           return a.c.name.localeCompare(b.c.name) * dir;
         case "rating":
           return (RATING_ORDER.indexOf(a.c.rating) - RATING_ORDER.indexOf(b.c.rating)) * dir;
+        case "score":
+          return (corpScore(a.c) - corpScore(b.c)) * dir;
+        case "score6m":
+          return (corpScore6m(a.c) - corpScore6m(b.c)) * dir;
         case "pd":
           return (a.c.pd - b.c.pd) * dir;
         case "dscr":
@@ -126,18 +134,21 @@ export function CorpWatchlist({
             <tr className="border-b bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
               <Th label="Borrower" onClick={() => toggleSort("name")} />
               <Th label="Rating" onClick={() => toggleSort("rating")} />
+              <Th label="Score (Now)" onClick={() => toggleSort("score")} />
+              <Th label="Score (6M)" onClick={() => toggleSort("score6m")} />
               <th className="px-3 py-3">Products</th>
               <Th label="PD %" align="right" onClick={() => toggleSort("pd")} />
               <Th label="DSCR" align="right" onClick={() => toggleSort("dscr")} />
               <Th label="Leverage" align="right" onClick={() => toggleSort("leverage")} />
               <Th label="Outstanding" align="right" onClick={() => toggleSort("outstanding")} />
               <Th label="Action" onClick={() => toggleSort("action")} />
+              <th className="px-3 py-3 text-center">AI Explain</th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-5 py-10 text-center text-sm text-muted-foreground">
+                <td colSpan={11} className="px-5 py-10 text-center text-sm text-muted-foreground">
                   No borrowers match the current filters.
                 </td>
               </tr>
@@ -204,6 +215,13 @@ export function CorpWatchlist({
                   </td>
 
                   <td className="px-3 py-3">
+                    <ScoreBadge score={corpScore(c)} />
+                  </td>
+                  <td className="px-3 py-3">
+                    <ScoreBadge score={corpScore6m(c)} delta={corpScore6m(c) - corpScore(c)} />
+                  </td>
+
+                  <td className="px-3 py-3">
                     <div className="flex flex-wrap gap-1">
                       {products.map((p) => (
                         <span
@@ -232,6 +250,9 @@ export function CorpWatchlist({
                     {fmtUSD(outstanding)}
                   </td>
                   <td className="px-3 py-3 text-xs">{c.action}</td>
+                  <td className="px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                    <CorpAIExplainCell corp={c} />
+                  </td>
                 </tr>
               );
             })}

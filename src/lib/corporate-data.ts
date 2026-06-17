@@ -395,3 +395,24 @@ export function bandMeta(b: RiskBand) {
     risk: { label: "High Risk — Action Required", token: "risk" },
   }[b];
 }
+
+// ---- Smart Credit Score (0–999 scale, aligned with retail bands) ----
+const RATING_BASE_SCORE: Record<CorpRating, number> = {
+  AAA: 950, AA: 880, A: 800, BBB: 720, BB: 560, B: 440, CCC: 320,
+};
+
+function scoreFromInputs(rating: CorpRating, dscr: number, leverage: number, pdShift = 0): number {
+  const base = RATING_BASE_SCORE[rating];
+  const dscrAdj = Math.round((dscr - 1.4) * 18);
+  const levAdj = Math.round((4 - leverage) * 9);
+  return Math.max(0, Math.min(999, base + dscrAdj + levAdj + pdShift));
+}
+
+export function corpScore(c: Corporate): number {
+  return scoreFromInputs(c.rating, c.dscr, c.leverage);
+}
+
+export function corpScore6m(c: Corporate): number {
+  const pdShift = Math.round((c.pd - c.pd6m) * 2);
+  return scoreFromInputs(c.rating6m, c.dscr, c.leverage, pdShift);
+}
