@@ -2,14 +2,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import {
   Building2,
-  TrendingDown,
   TrendingUp,
   AlertTriangle,
   Layers,
   ShieldAlert,
   ClipboardCheck,
-  ArrowUpRight,
-  ArrowDownRight,
   X,
   Download,
   BarChart3,
@@ -28,6 +25,7 @@ import {
   RATING_ORDER,
   type Corporate,
   type CorpProduct,
+  type CorpPeriod,
   type ActionType,
 } from "@/lib/corporate-data";
 import { CollapsibleSection } from "@/components/risk/CollapsibleSection";
@@ -40,7 +38,7 @@ export const Route = createFileRoute("/corporate")({
       {
         name: "description",
         content:
-          "Corporate loan portfolio monitoring: ratings, covenant tracking, sector concentration, and renewal pipeline.",
+          "Corporate loan portfolio monitoring with Now and 6-month predictive score across Term Loan, Working Capital and Syndicated Loan.",
       },
     ],
   }),
@@ -56,7 +54,10 @@ const ACTION_COLORS: Record<ActionType, string> = {
 };
 
 function CorporateDashboard() {
-  const summary = useMemo(() => portfolioSummary(), []);
+  const [period, setPeriod] = useState<CorpPeriod>("current");
+  const summaryCurrent = useMemo(() => portfolioSummary("current"), []);
+  const summary6m = useMemo(() => portfolioSummary("6m"), []);
+  const summary = period === "6m" ? summary6m : summaryCurrent;
   const [selected, setSelected] = useState<Corporate | null>(null);
 
   return (
@@ -94,17 +95,17 @@ function CorporateDashboard() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Corporate Portfolio Overview</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {summary.count} corporate borrowers · {fmtUSD(summary.sanctioned)} sanctioned · live exposure, covenant
-            and rating-migration monitoring.
+            {summary.count} corporate borrowers · {fmtUSD(summary.sanctioned)} sanctioned · live
+            exposure with Now and 6-month predictive risk.
           </p>
         </div>
 
         <CollapsibleSection
           title="Portfolio KPIs & Risk Distribution"
-          description="Sanctioned, outstanding, at-risk exposure and watchlist concentration"
+          description="Headline exposure metrics and rating-band segmentation"
           icon={BarChart3}
         >
-          <KPIGrid summary={summary} />
+          <KPIGrid summary={summary} period={period} onPeriodChange={setPeriod} />
         </CollapsibleSection>
 
         <CollapsibleSection
@@ -112,43 +113,19 @@ function CorporateDashboard() {
           description="Term Loan · Working Capital · Syndicated Loan"
           icon={Layers}
         >
-          <ProductSnapshot summary={summary} />
+          <ProductSnapshot summary={summary} period={period} onPeriodChange={setPeriod} />
         </CollapsibleSection>
 
         <CollapsibleSection
           title="Corporate Product Risk Movement"
-          description="Exposure-weighted PD trajectory by product"
+          description="Exposure-weighted Probability of Default by product — Now and 6-month forecast"
           icon={TrendingUp}
         >
           <CorpRiskChart />
         </CollapsibleSection>
 
         <CollapsibleSection
-          title="Sector Concentration & Single-Borrower Limits"
-          description="Identify concentration breaches against bank limit framework"
-          icon={ShieldAlert}
-        >
-          <ConcentrationPanel summary={summary} onSelectCustomer={setSelected} />
-        </CollapsibleSection>
-
-        <CollapsibleSection
-          title="Covenant Breach Alerts"
-          description="Borrowers with DSCR, leverage or liquidity covenants flagged"
-          icon={AlertTriangle}
-        >
-          <CovenantAlerts onSelectCustomer={setSelected} />
-        </CollapsibleSection>
-
-        <CollapsibleSection
-          title="Rating Migration Watch"
-          description="6-month forecasted downgrades and upgrades"
-          icon={TrendingDown}
-        >
-          <RatingMigration onSelectCustomer={setSelected} />
-        </CollapsibleSection>
-
-        <CollapsibleSection
-          title="Action Planner & Renewal Pipeline"
+          title="Action Planner"
           description="Filter borrowers by recommended action and export RM list"
           icon={ClipboardCheck}
         >
@@ -170,65 +147,140 @@ function CorporateDashboard() {
 }
 
 /* ============= KPI Grid ============= */
-function KPIGrid({ summary }: { summary: ReturnType<typeof portfolioSummary> }) {
+function KPIGrid({
+  summary,
+  period,
+  onPeriodChange,
+}: {
+  summary: ReturnType<typeof portfolioSummary>;
+  period: CorpPeriod;
+  onPeriodChange: (p: CorpPeriod) => void;
+}) {
   const utilization = (summary.outstanding / summary.sanctioned) * 100;
   const atRiskPct = (summary.atRisk / summary.outstanding) * 100;
-  const watchlistCount = CORPORATES.filter((c) => {
-    const b = ratingToBand(c.rating);
-    return b === "watch" || b === "risk";
-  }).length;
+  const watchlistCount = summary.countByBand.watch + summary.countByBand.risk;
+  const avgFacility = summary.outstanding / summary.count;
 
   const cards = [
-    { label: "Total Sanctioned", value: fmtUSD(summary.sanctioned), sub: `${summary.count} borrowers`, icon: Building2 },
-    { label: "Total Outstanding", value: fmtUSD(summary.outstanding), sub: `${utilization.toFixed(1)}% utilization`, icon: Layers },
-    { label: "At-Risk Exposure", value: fmtUSD(summary.atRisk), sub: `${atRiskPct.toFixed(1)}% of book`, icon: AlertTriangle, alert: true },
-    { label: "Watchlist Borrowers", value: String(watchlistCount), sub: `${((watchlistCount / summary.count) * 100).toFixed(0)}% of names`, icon: ShieldAlert },
+    {
+      label: "Total Sanctioned",
+      value: fmtUSD(summary.sanctioned),
+      sub: `${summary.count} borrowers`,
+      icon: Building2,
+    },
+    {
+      label: "Total Outstanding",
+      value: fmtUSD(summary.outstanding),
+      sub: `${utilization.toFixed(1)}% utilization`,
+      icon: Layers,
+    },
+    {
+      label: "Avg Outstanding / Borrower",
+      value: fmtUSD(avgFacility),
+      sub: "Across 3 products",
+      icon: BarChart3,
+    },
+    {
+      label: period === "6m" ? "At-Risk Exposure (6m)" : "At-Risk Exposure",
+      value: fmtUSD(summary.atRisk),
+      sub: `${atRiskPct.toFixed(1)}% of book · ${watchlistCount} names`,
+      icon: AlertTriangle,
+      alert: true,
+    },
   ];
 
+  const Tab = ({ id, label }: { id: CorpPeriod; label: string }) => (
+    <button
+      onClick={() => onPeriodChange(id)}
+      className={cn(
+        "rounded-md px-3 py-1.5 text-xs font-medium transition",
+        period === id
+          ? "bg-primary text-primary-foreground"
+          : "bg-secondary text-secondary-foreground hover:bg-secondary/70",
+      )}
+    >
+      {label}
+    </button>
+  );
+
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
       {cards.map((k) => (
-        <div key={k.label} className="rounded-xl border bg-card p-5 shadow-sm">
+        <div key={k.label} className="rounded-xl border bg-card p-5 shadow-sm transition hover:shadow-md">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{k.label}</span>
-            <k.icon className={cn("h-4 w-4", k.alert ? "text-[var(--band-risk)]" : "text-muted-foreground")} />
+            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              {k.label}
+            </span>
+            <k.icon
+              className={cn("h-4 w-4", k.alert ? "text-[var(--band-risk)]" : "text-muted-foreground")}
+            />
           </div>
-          <div className="mt-3 text-2xl font-semibold tabular-nums">{k.value}</div>
+          <div
+            className={cn(
+              "mt-3 text-3xl font-semibold tabular-nums",
+              k.alert ? "text-[var(--band-risk)]" : "text-foreground",
+            )}
+          >
+            {k.value}
+          </div>
           <div className="mt-1 text-xs text-muted-foreground">{k.sub}</div>
         </div>
       ))}
 
-      {/* Band distribution */}
-      <div className="rounded-xl border bg-card p-5 shadow-sm sm:col-span-2 lg:col-span-4">
-        <div className="mb-3 flex items-center justify-between">
-          <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Outstanding by Risk Band
-          </span>
-          <span className="text-xs text-muted-foreground">Total {fmtUSD(summary.outstanding)}</span>
+      <div className="md:col-span-2 xl:col-span-4 rounded-xl border bg-card p-5">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Portfolio Distribution by Rating Band
+            </div>
+            <div className="mt-0.5 text-sm text-muted-foreground">
+              Ratings AAA → CCC · {period === "6m" ? "6-month forecast" : "current"} segmentation
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Tab id="current" label="Now" />
+            <Tab id="6m" label="6 Months" />
+            <span className="ml-1 text-xs text-muted-foreground">{summary.count} borrowers</span>
+          </div>
         </div>
-        <div className="flex h-3 overflow-hidden rounded-full">
+
+        <div className="flex h-3 w-full overflow-hidden rounded-full bg-secondary">
           {(["loyal", "stable", "watch", "risk"] as const).map((b) => {
             const pct = (summary.byBand[b] / summary.outstanding) * 100;
             return (
               <div
                 key={b}
-                className="h-full"
                 style={{ width: `${pct}%`, background: `var(--band-${b})` }}
                 title={`${bandMeta(b).label} — ${pct.toFixed(1)}%`}
               />
             );
           })}
         </div>
-        <div className="mt-3 grid gap-3 sm:grid-cols-4">
-          {(["loyal", "stable", "watch", "risk"] as const).map((b) => (
-            <div key={b} className="flex items-start gap-2">
-              <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full" style={{ background: `var(--band-${b})` }} />
-              <div>
-                <div className="text-xs font-medium">{bandMeta(b).label}</div>
-                <div className="text-sm font-semibold tabular-nums">{fmtUSD(summary.byBand[b])}</div>
+
+        <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+          {(["loyal", "stable", "watch", "risk"] as const).map((b) => {
+            const exposure = summary.byBand[b];
+            const pct = (exposure / summary.outstanding) * 100;
+            const count = summary.countByBand[b];
+            return (
+              <div key={b} className="rounded-lg border bg-background/40 p-3">
+                <div className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-sm" style={{ background: `var(--band-${b})` }} />
+                  <span
+                    className="text-xs font-semibold uppercase tracking-wide"
+                    style={{ color: `var(--band-${b})` }}
+                  >
+                    {bandMeta(b).label}
+                  </span>
+                </div>
+                <div className="mt-2 flex items-baseline gap-2">
+                  <span className="text-xl font-semibold tabular-nums">{count}</span>
+                  <span className="text-xs text-muted-foreground">{pct.toFixed(1)}%</span>
+                </div>
+                <div className="mt-1 text-xs text-muted-foreground">Exposure {fmtUSD(exposure)}</div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
@@ -236,10 +288,42 @@ function KPIGrid({ summary }: { summary: ReturnType<typeof portfolioSummary> }) 
 }
 
 /* ============= Product Snapshot ============= */
-function ProductSnapshot({ summary }: { summary: ReturnType<typeof portfolioSummary> }) {
+function ProductSnapshot({
+  summary,
+  period,
+  onPeriodChange,
+}: {
+  summary: ReturnType<typeof portfolioSummary>;
+  period: CorpPeriod;
+  onPeriodChange: (p: CorpPeriod) => void;
+}) {
   const products: CorpProduct[] = ["Term Loan", "Working Capital", "Syndicated Loan"];
+
+  const Tab = ({ id, label }: { id: CorpPeriod; label: string }) => (
+    <button
+      onClick={() => onPeriodChange(id)}
+      className={cn(
+        "rounded-md px-3 py-1.5 text-xs font-medium transition",
+        period === id
+          ? "bg-primary text-primary-foreground"
+          : "bg-secondary text-secondary-foreground hover:bg-secondary/70",
+      )}
+    >
+      {label}
+    </button>
+  );
+
   return (
     <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
+      <div className="flex items-center justify-between gap-3 border-b px-5 py-3">
+        <div className="text-xs text-muted-foreground">
+          At-risk column reflects {period === "6m" ? "6-month forecasted" : "current"} rating band
+        </div>
+        <div className="flex items-center gap-2">
+          <Tab id="current" label="Now" />
+          <Tab id="6m" label="6 Months" />
+        </div>
+      </div>
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
@@ -248,6 +332,7 @@ function ProductSnapshot({ summary }: { summary: ReturnType<typeof portfolioSumm
             <th className="px-3 py-3 text-right">Sanctioned</th>
             <th className="px-3 py-3 text-right">Outstanding</th>
             <th className="px-3 py-3 text-right">Utilization</th>
+            <th className="px-3 py-3 text-right">At-Risk</th>
             <th className="px-5 py-3 text-right">Share of Book</th>
           </tr>
         </thead>
@@ -256,6 +341,7 @@ function ProductSnapshot({ summary }: { summary: ReturnType<typeof portfolioSumm
             const d = summary.byProduct[p];
             const util = (d.outstanding / d.sanctioned) * 100;
             const share = (d.outstanding / summary.outstanding) * 100;
+            const atRiskPct = (d.atRisk / d.outstanding) * 100;
             return (
               <tr key={p} className="border-b last:border-0">
                 <td className="px-5 py-3 font-medium">{p}</td>
@@ -263,12 +349,20 @@ function ProductSnapshot({ summary }: { summary: ReturnType<typeof portfolioSumm
                 <td className="px-3 py-3 text-right tabular-nums">{fmtUSD(d.sanctioned)}</td>
                 <td className="px-3 py-3 text-right tabular-nums">{fmtUSD(d.outstanding)}</td>
                 <td className="px-3 py-3 text-right tabular-nums">{util.toFixed(1)}%</td>
+                <td className="px-3 py-3 text-right tabular-nums">
+                  <span className="font-medium text-[var(--band-risk)]">{fmtUSD(d.atRisk)}</span>
+                  <span className="ml-1 text-xs text-muted-foreground">
+                    {isFinite(atRiskPct) ? `${atRiskPct.toFixed(0)}%` : "—"}
+                  </span>
+                </td>
                 <td className="px-5 py-3 text-right">
                   <div className="ml-auto flex max-w-[160px] items-center gap-2">
                     <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
                       <div className="h-full bg-primary" style={{ width: `${share}%` }} />
                     </div>
-                    <span className="text-xs tabular-nums text-muted-foreground">{share.toFixed(0)}%</span>
+                    <span className="text-xs tabular-nums text-muted-foreground">
+                      {share.toFixed(0)}%
+                    </span>
                   </div>
                 </td>
               </tr>
@@ -284,246 +378,13 @@ function ProductSnapshot({ summary }: { summary: ReturnType<typeof portfolioSumm
             <td className="px-3 py-3 text-right tabular-nums">
               {((summary.outstanding / summary.sanctioned) * 100).toFixed(1)}%
             </td>
+            <td className="px-3 py-3 text-right tabular-nums text-[var(--band-risk)]">
+              {fmtUSD(summary.atRisk)}
+            </td>
             <td className="px-5 py-3 text-right tabular-nums">100%</td>
           </tr>
         </tbody>
       </table>
-    </div>
-  );
-}
-
-/* ============= Concentration ============= */
-function ConcentrationPanel({
-  summary,
-  onSelectCustomer,
-}: {
-  summary: ReturnType<typeof portfolioSummary>;
-  onSelectCustomer: (c: Corporate) => void;
-}) {
-  const SECTOR_LIMIT_PCT = 20; // % of total book
-  const SINGLE_BORROWER_LIMIT_PCT = 8;
-  const sectors = Object.entries(summary.bySector)
-    .map(([k, v]) => ({ name: k, exposure: v, pct: (v / summary.outstanding) * 100 }))
-    .sort((a, b) => b.exposure - a.exposure);
-
-  const topBorrowers = CORPORATES.map((c) => {
-    const t = facilityTotals(c);
-    return { c, outstanding: t.outstanding, pct: (t.outstanding / summary.outstanding) * 100 };
-  })
-    .sort((a, b) => b.outstanding - a.outstanding)
-    .slice(0, 8);
-
-  return (
-    <div className="grid gap-4 lg:grid-cols-2">
-      <div className="rounded-xl border bg-card p-5 shadow-sm">
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-sm font-semibold">Sector Concentration</h3>
-          <span className="text-xs text-muted-foreground">Limit {SECTOR_LIMIT_PCT}%</span>
-        </div>
-        <div className="space-y-3">
-          {sectors.map((s) => {
-            const breach = s.pct > SECTOR_LIMIT_PCT;
-            const warn = !breach && s.pct > SECTOR_LIMIT_PCT * 0.85;
-            return (
-              <div key={s.name}>
-                <div className="mb-1 flex items-center justify-between text-xs">
-                  <span className="font-medium">{s.name}</span>
-                  <span
-                    className={cn(
-                      "tabular-nums",
-                      breach && "text-[var(--band-risk)] font-semibold",
-                      warn && "text-[var(--band-watch)] font-semibold",
-                    )}
-                  >
-                    {fmtUSD(s.exposure)} · {s.pct.toFixed(1)}%
-                  </span>
-                </div>
-                <div className="relative h-2 overflow-hidden rounded-full bg-muted">
-                  <div
-                    className="h-full"
-                    style={{
-                      width: `${Math.min(100, (s.pct / SECTOR_LIMIT_PCT) * 100)}%`,
-                      background: breach
-                        ? "var(--band-risk)"
-                        : warn
-                          ? "var(--band-watch)"
-                          : "var(--band-stable)",
-                    }}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="rounded-xl border bg-card p-5 shadow-sm">
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-sm font-semibold">Top Single-Borrower Exposure</h3>
-          <span className="text-xs text-muted-foreground">Limit {SINGLE_BORROWER_LIMIT_PCT}%</span>
-        </div>
-        <div className="space-y-2">
-          {topBorrowers.map(({ c, outstanding, pct }) => {
-            const breach = pct > SINGLE_BORROWER_LIMIT_PCT;
-            return (
-              <button
-                key={c.id}
-                onClick={() => onSelectCustomer(c)}
-                className="flex w-full items-center justify-between gap-3 rounded-md border bg-background px-3 py-2 text-left text-sm transition hover:bg-muted/40"
-              >
-                <div className="min-w-0">
-                  <div className="truncate font-medium">{c.name}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {c.sector} · {c.rating}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-semibold tabular-nums">{fmtUSD(outstanding)}</div>
-                  <div
-                    className={cn(
-                      "text-xs tabular-nums",
-                      breach ? "font-semibold text-[var(--band-risk)]" : "text-muted-foreground",
-                    )}
-                  >
-                    {pct.toFixed(2)}% {breach && "· breach"}
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ============= Covenant Alerts ============= */
-function CovenantAlerts({ onSelectCustomer }: { onSelectCustomer: (c: Corporate) => void }) {
-  const rows = CORPORATES
-    .map((c) => ({ c, breaches: c.covenants.filter((cv) => cv.status !== "ok") }))
-    .filter((r) => r.breaches.length > 0)
-    .sort((a, b) => {
-      const sev = (xs: typeof a.breaches) => xs.filter((x) => x.status === "breach").length * 10 + xs.length;
-      return sev(b.breaches) - sev(a.breaches);
-    });
-
-  return (
-    <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
-            <th className="px-5 py-3">Borrower</th>
-            <th className="px-3 py-3">Rating</th>
-            <th className="px-3 py-3">Covenant</th>
-            <th className="px-3 py-3 text-right">Threshold</th>
-            <th className="px-3 py-3 text-right">Actual</th>
-            <th className="px-3 py-3">Status</th>
-            <th className="px-5 py-3 text-right">Outstanding</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.length === 0 && (
-            <tr>
-              <td colSpan={7} className="px-5 py-8 text-center text-sm text-muted-foreground">
-                No active covenant breaches.
-              </td>
-            </tr>
-          )}
-          {rows.flatMap(({ c, breaches }) =>
-            breaches.map((cv, i) => (
-              <tr
-                key={`${c.id}-${cv.name}`}
-                className="cursor-pointer border-b transition hover:bg-muted/40 last:border-0"
-                onClick={() => onSelectCustomer(c)}
-              >
-                {i === 0 ? (
-                  <>
-                    <td rowSpan={breaches.length} className="px-5 py-3 align-top">
-                      <div className="font-medium">{c.name}</div>
-                      <div className="text-xs text-muted-foreground">{c.sector}</div>
-                    </td>
-                    <td rowSpan={breaches.length} className="px-3 py-3 align-top">
-                      <RatingBadge rating={c.rating} />
-                    </td>
-                  </>
-                ) : null}
-                <td className="px-3 py-3 font-medium">{cv.name}</td>
-                <td className="px-3 py-3 text-right tabular-nums text-muted-foreground">{cv.threshold}</td>
-                <td className="px-3 py-3 text-right tabular-nums font-semibold">{cv.actual}</td>
-                <td className="px-3 py-3">
-                  <StatusPill status={cv.status} />
-                </td>
-                {i === 0 ? (
-                  <td rowSpan={breaches.length} className="px-5 py-3 text-right align-top tabular-nums">
-                    {fmtUSD(facilityTotals(c).outstanding)}
-                  </td>
-                ) : null}
-              </tr>
-            )),
-          )}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-/* ============= Rating Migration ============= */
-function RatingMigration({ onSelectCustomer }: { onSelectCustomer: (c: Corporate) => void }) {
-  const moves = CORPORATES
-    .map((c) => ({
-      c,
-      diff: RATING_ORDER.indexOf(c.rating6m) - RATING_ORDER.indexOf(c.rating),
-    }))
-    .filter((m) => m.diff !== 0)
-    .sort((a, b) => b.diff - a.diff);
-
-  const downgrades = moves.filter((m) => m.diff > 0).sort((a, b) => b.diff - a.diff);
-  const upgrades = moves.filter((m) => m.diff < 0).sort((a, b) => a.diff - b.diff);
-
-  const Card = ({ title, items, kind }: { title: string; items: typeof moves; kind: "down" | "up" }) => (
-    <div className="rounded-xl border bg-card shadow-sm">
-      <div className="flex items-center justify-between border-b px-5 py-3">
-        <div className="flex items-center gap-2">
-          {kind === "down" ? (
-            <ArrowDownRight className="h-4 w-4 text-[var(--band-risk)]" />
-          ) : (
-            <ArrowUpRight className="h-4 w-4 text-[var(--band-loyal)]" />
-          )}
-          <h3 className="text-sm font-semibold">{title}</h3>
-        </div>
-        <span className="text-xs text-muted-foreground">{items.length} names</span>
-      </div>
-      <div className="divide-y">
-        {items.length === 0 && (
-          <div className="px-5 py-6 text-center text-sm text-muted-foreground">No forecasted moves.</div>
-        )}
-        {items.slice(0, 8).map(({ c }) => (
-          <button
-            key={c.id}
-            onClick={() => onSelectCustomer(c)}
-            className="flex w-full items-center justify-between gap-3 px-5 py-3 text-left transition hover:bg-muted/40"
-          >
-            <div className="min-w-0">
-              <div className="truncate text-sm font-medium">{c.name}</div>
-              <div className="text-xs text-muted-foreground">
-                {c.sector} · PD {c.pd}% → {c.pd6m}%
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <RatingBadge rating={c.rating} />
-              <span className="text-muted-foreground">→</span>
-              <RatingBadge rating={c.rating6m} />
-            </div>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="grid gap-4 lg:grid-cols-2">
-      <Card title="Forecast Downgrades (6m)" items={downgrades} kind="down" />
-      <Card title="Forecast Upgrades (6m)" items={upgrades} kind="up" />
     </div>
   );
 }
@@ -543,9 +404,7 @@ function ActionPlanner({ onSelectCustomer }: { onSelectCustomer: (c: Corporate) 
   const rows = useMemo(() => {
     const list = CORPORATES.filter((c) => filter === "All" || c.action === filter).map((c) => {
       const t = facilityTotals(c);
-      const nextMaturity = c.facilities
-        .map((f) => f.maturityDate)
-        .sort()[0];
+      const nextMaturity = c.facilities.map((f) => f.maturityDate).sort()[0];
       return { c, ...t, nextMaturity };
     });
     list.sort((a, b) => b.outstanding - a.outstanding);
@@ -553,20 +412,32 @@ function ActionPlanner({ onSelectCustomer }: { onSelectCustomer: (c: Corporate) 
   }, [filter]);
 
   const exportCSV = () => {
-    const header = ["ID", "Borrower", "Sector", "Rating", "Action", "RM", "Sanctioned (USD)", "Outstanding (USD)", "Next Maturity"];
+    const header = [
+      "ID",
+      "Borrower",
+      "Sector",
+      "Rating",
+      "Action",
+      "RM",
+      "Sanctioned (USD)",
+      "Outstanding (USD)",
+      "Next Maturity",
+    ];
     const lines = [header.join(",")];
     for (const r of rows) {
-      lines.push([
-        r.c.id,
-        `"${r.c.name}"`,
-        r.c.sector,
-        r.c.rating,
-        r.c.action,
-        r.c.rm,
-        r.sanctioned,
-        r.outstanding,
-        r.nextMaturity,
-      ].join(","));
+      lines.push(
+        [
+          r.c.id,
+          `"${r.c.name}"`,
+          r.c.sector,
+          r.c.rating,
+          r.c.action,
+          r.c.rm,
+          r.sanctioned,
+          r.outstanding,
+          r.nextMaturity,
+        ].join(","),
+      );
     }
     const blob = new Blob([lines.join("\n")], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -685,7 +556,6 @@ function CorpDetail({ corp, onClose }: { corp: Corporate; onClose: () => void })
         </div>
 
         <div className="space-y-5 px-6 py-5">
-          {/* Headline metrics */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <Stat label="Sanctioned" value={fmtUSD(t.sanctioned)} />
             <Stat label="Outstanding" value={fmtUSD(t.outstanding)} />
@@ -709,19 +579,17 @@ function CorpDetail({ corp, onClose }: { corp: Corporate; onClose: () => void })
             />
           </div>
 
-          {/* Action card */}
-          <div
-            className={cn(
-              "rounded-xl border p-4",
-              ACTION_COLORS[corp.action].replace("text-", "border-").replace("bg-", "bg-"),
-              "bg-card",
-            )}
-          >
+          <div className="rounded-xl border bg-card p-4">
             <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
               Recommended Action
             </div>
             <div className="mt-1 flex items-center justify-between">
-              <span className={cn("text-base font-semibold", ACTION_COLORS[corp.action].split(" ").find((c) => c.startsWith("text-")))}>
+              <span
+                className={cn(
+                  "text-base font-semibold",
+                  ACTION_COLORS[corp.action].split(" ").find((c) => c.startsWith("text-")),
+                )}
+              >
                 {corp.action}
               </span>
               <span className="text-xs text-muted-foreground">{bandMeta(band).label}</span>
@@ -729,7 +597,6 @@ function CorpDetail({ corp, onClose }: { corp: Corporate; onClose: () => void })
             <p className="mt-2 text-sm text-muted-foreground">{corp.notes}</p>
           </div>
 
-          {/* Fundamentals */}
           <div>
             <h3 className="mb-2 text-sm font-semibold">Financial Covenants</h3>
             <div className="overflow-hidden rounded-lg border">
@@ -746,9 +613,13 @@ function CorpDetail({ corp, onClose }: { corp: Corporate; onClose: () => void })
                   {corp.covenants.map((c) => (
                     <tr key={c.name} className="border-b last:border-0">
                       <td className="px-3 py-2 font-medium">{c.name}</td>
-                      <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{c.threshold}</td>
+                      <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">
+                        {c.threshold}
+                      </td>
                       <td className="px-3 py-2 text-right tabular-nums font-semibold">{c.actual}</td>
-                      <td className="px-3 py-2"><StatusPill status={c.status} /></td>
+                      <td className="px-3 py-2">
+                        <StatusPill status={c.status} />
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -756,7 +627,6 @@ function CorpDetail({ corp, onClose }: { corp: Corporate; onClose: () => void })
             </div>
           </div>
 
-          {/* Facilities */}
           <div>
             <h3 className="mb-2 text-sm font-semibold">Credit Facilities</h3>
             <div className="space-y-2">
@@ -843,7 +713,9 @@ function Stat({
 }) {
   return (
     <div className="rounded-lg border bg-card p-3">
-      <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+        {label}
+      </div>
       <div className={cn("mt-1 text-lg font-semibold tabular-nums", tone && `text-[var(--band-${tone})]`)}>
         {value}
       </div>
