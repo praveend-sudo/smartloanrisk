@@ -17,7 +17,7 @@ import { ScoreBadge } from "./ScoreBadge";
 import { CorpAIExplainCell } from "./CorpAIExplainCell";
 import { cn } from "@/lib/utils";
 
-type SortKey = "name" | "rating" | "pd" | "outstanding" | "dscr" | "leverage" | "action";
+type SortKey = "name" | "rating" | "score" | "score6m" | "pd" | "outstanding" | "dscr" | "leverage" | "action";
 
 const BAND_FILTERS: Array<{ id: RiskBand | "all"; label: string }> = [
   { id: "all", label: "All" },
