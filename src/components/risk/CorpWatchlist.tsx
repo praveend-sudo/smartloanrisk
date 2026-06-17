@@ -162,18 +162,47 @@ export function CorpWatchlist({
                     </div>
                   </td>
                   <td className="px-3 py-3">
-                    <span
-                      className={cn(
-                        "inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold ring-1",
-                        `bg-[var(--band-${b}-soft)]`,
-                        `text-[var(--band-${b})]`,
-                        `ring-[var(--band-${b})]/30`,
-                      )}
-                      title={meta.label}
-                    >
-                      {c.rating}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span
+                        className={cn(
+                          "inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold ring-1",
+                          `bg-[var(--band-${b}-soft)]`,
+                          `text-[var(--band-${b})]`,
+                          `ring-[var(--band-${b})]/30`,
+                        )}
+                        title={`Now: ${meta.label}`}
+                      >
+                        {c.rating}
+                      </span>
+                      {(() => {
+                        const b6 = ratingToBand(c.rating6m);
+                        const meta6 = bandMeta(b6);
+                        const nowIdx = RATING_ORDER.indexOf(c.rating);
+                        const futIdx = RATING_ORDER.indexOf(c.rating6m);
+                        const arrow = futIdx > nowIdx ? "▼" : futIdx < nowIdx ? "▲" : "→";
+                        return (
+                          <>
+                            <span className="text-[10px] text-muted-foreground">{arrow}</span>
+                            <span
+                              className={cn(
+                                "inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-semibold ring-1",
+                                `bg-[var(--band-${b6}-soft)]`,
+                                `text-[var(--band-${b6})]`,
+                                `ring-[var(--band-${b6})]/30`,
+                              )}
+                              title={`6M: ${meta6.label}`}
+                            >
+                              {c.rating6m}
+                            </span>
+                          </>
+                        );
+                      })()}
+                    </div>
+                    <div className="mt-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
+                      Now → 6M
+                    </div>
                   </td>
+
                   <td className="px-3 py-3">
                     <div className="flex flex-wrap gap-1">
                       {products.map((p) => (
