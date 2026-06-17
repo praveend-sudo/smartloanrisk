@@ -145,6 +145,24 @@ function pdForRating(r: CorpRating) {
   return +(map[r] * between(0.85, 1.2)).toFixed(2);
 }
 
+// Fixed reference date so SSR and client render identical content
+const REF_DATE = new Date("2026-06-01T00:00:00Z");
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function addMonths(d: Date, m: number): Date {
+  const r = new Date(d);
+  r.setUTCMonth(r.getUTCMonth() + m);
+  return r;
+}
+
 function makeFacility(idx: number, product: CorpProduct, ratingMult: number): CorpFacility {
   const baseMap: Record<CorpProduct, [number, number]> = {
     "Term Loan": [25_000_000, 220_000_000],
@@ -157,10 +175,8 @@ function makeFacility(idx: number, product: CorpProduct, ratingMult: number): Co
   const outstanding = Math.round(sanctioned * utilization / 100_000) * 100_000;
   const tenor = product === "Working Capital" ? pick([12, 18, 24]) : pick([36, 48, 60, 84, 120]);
   const startMonthsAgo = Math.floor(between(2, tenor - 3));
-  const start = new Date();
-  start.setMonth(start.getMonth() - startMonthsAgo);
-  const maturity = new Date(start);
-  maturity.setMonth(maturity.getMonth() + tenor);
+  const start = addMonths(REF_DATE, -startMonthsAgo);
+  const maturity = addMonths(start, tenor);
   return {
     id: `FAC-${idx}`,
     product,
@@ -173,6 +189,7 @@ function makeFacility(idx: number, product: CorpProduct, ratingMult: number): Co
     tenorMonths: tenor,
   };
 }
+
 
 function makeCovenants(dscr: number, leverage: number, cr: number): CovenantStatus[] {
   const s = (ok: boolean, warn: boolean): CovenantStatus["status"] =>
@@ -218,7 +235,7 @@ function makeCorporate(i: number, entry: [string, string, string]): Corporate {
 
   const productCount = pick([1, 2, 2, 3]);
   const productPool: CorpProduct[] = ["Term Loan", "Working Capital", "Syndicated Loan"];
-  const shuffled = [...productPool].sort(() => rand() - 0.5).slice(0, productCount);
+  const shuffled = shuffle(productPool).slice(0, productCount);
   const facilities = shuffled.map((p, idx) => makeFacility(i * 10 + idx, p, ratingMult));
 
   // Fundamentals correlated with rating
@@ -227,10 +244,25 @@ function makeCorporate(i: number, entry: [string, string, string]): Corporate {
   const leverage = +between(2.2 + ratingIdx * 0.35, 3.5 + ratingIdx * 0.55).toFixed(2);
   const currentRatio = +between(0.95 + (6 - ratingIdx) * 0.08, 1.2 + (6 - ratingIdx) * 0.12).toFixed(2);
 
-  // Forecast: high ratings drift, low ratings degrade
-  const drift = ratingIdx >= 4 ? (rand() < 0.55 ? 1 : 0) : (rand() < 0.15 ? -1 : 0);
+  // 6-month forecast: substantial migration (~70% of names move, mostly downgrades,
+  // with multi-notch jumps for stressed credits). Investment-grade names also drift.
+  const roll = rand();
+  let drift = 0;
+  if (ratingIdx <= 1) {
+    // AAA/AA: mild downgrade pressure
+    drift = roll < 0.55 ? 1 : roll < 0.7 ? 2 : 0;
+  } else if (ratingIdx <= 3) {
+    // A/BBB: meaningful migration toward sub-IG
+    drift = roll < 0.45 ? 1 : roll < 0.7 ? 2 : roll < 0.8 ? -1 : 0;
+  } else if (ratingIdx === 4) {
+    // BB: heavy downgrade risk
+    drift = roll < 0.5 ? 1 : roll < 0.8 ? 2 : roll < 0.9 ? -1 : 0;
+  } else {
+    // B / CCC: stressed — large downgrades or rare recoveries
+    drift = roll < 0.55 ? 1 : roll < 0.85 ? 2 : roll < 0.95 ? -1 : 0;
+  }
   const rating6m = nextRating(rating, drift);
-  const ratingPrev = nextRating(rating, rand() < 0.2 ? 1 : 0);
+  const ratingPrev = nextRating(rating, rand() < 0.25 ? -1 : 0);
 
   const covenants = makeCovenants(dscr, leverage, currentRatio);
   const breached = covenants.some((c) => c.status === "breach");
@@ -238,13 +270,17 @@ function makeCorporate(i: number, entry: [string, string, string]): Corporate {
 
   let action: ActionType = "Routine Monitoring";
   if (breached) action = "Covenant Review";
-  else if (drift < 0) action = "Rating Watch";
+  else if (drift > 0) action = "Rating Watch";
   else if (warning && ratingIdx >= 4) action = "Exposure Reduction";
   else {
     // upcoming maturity
-    const soonest = facilities.reduce((min, f) => Math.min(min, +new Date(f.maturityDate) - Date.now()), Infinity);
+    const soonest = facilities.reduce(
+      (min, f) => Math.min(min, +new Date(f.maturityDate) - +REF_DATE),
+      Infinity,
+    );
     if (soonest < 1000 * 60 * 60 * 24 * 270) action = "Renewal Discussion";
   }
+
 
   const notesPool = [
     "Q3 earnings beat consensus; cash conversion improving.",
