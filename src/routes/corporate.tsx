@@ -606,37 +606,6 @@ function CorpDetail({ corp, onClose }: { corp: Corporate; onClose: () => void })
             <p className="mt-2 text-sm text-muted-foreground">{corp.notes}</p>
           </div>
 
-
-          <div>
-            <h3 className="mb-2 text-sm font-semibold">Financial Covenants</h3>
-            <div className="overflow-hidden rounded-lg border">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b bg-muted/40 text-left text-xs text-muted-foreground">
-                    <th className="px-3 py-2">Covenant</th>
-                    <th className="px-3 py-2 text-right">Threshold</th>
-                    <th className="px-3 py-2 text-right">Actual</th>
-                    <th className="px-3 py-2">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {corp.covenants.map((c) => (
-                    <tr key={c.name} className="border-b last:border-0">
-                      <td className="px-3 py-2 font-medium">{c.name}</td>
-                      <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">
-                        {c.threshold}
-                      </td>
-                      <td className="px-3 py-2 text-right tabular-nums font-semibold">{c.actual}</td>
-                      <td className="px-3 py-2">
-                        <StatusPill status={c.status} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
           <div>
             <h3 className="mb-2 text-sm font-semibold">Credit Facilities</h3>
             <div className="space-y-2">
@@ -672,43 +641,6 @@ function CorpDetail({ corp, onClose }: { corp: Corporate; onClose: () => void })
 }
 
 /* ============= Atoms ============= */
-function RatingBadge({ rating }: { rating: Corporate["rating"] }) {
-  const band = ratingToBand(rating);
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold ring-1",
-        `bg-[var(--band-${band}-soft)]`,
-        `text-[var(--band-${band})]`,
-        `ring-[var(--band-${band})]/30`,
-      )}
-    >
-      {rating}
-    </span>
-  );
-}
-
-function StatusPill({ status }: { status: "ok" | "warning" | "breach" }) {
-  const map = {
-    ok: { label: "Within", token: "loyal" },
-    warning: { label: "Tight", token: "watch" },
-    breach: { label: "Breach", token: "risk" },
-  } as const;
-  const m = map[status];
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium",
-        `bg-[var(--band-${m.token}-soft)]`,
-        `text-[var(--band-${m.token})]`,
-      )}
-    >
-      {status === "breach" && <AlertTriangle className="h-3 w-3" />}
-      {status === "ok" && <TrendingUp className="h-3 w-3" />}
-      {m.label}
-    </span>
-  );
-}
 
 function Stat({
   label,
